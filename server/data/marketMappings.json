@@ -1,0 +1,101 @@
+{
+    "1X2": {
+        "sportybet": {
+            "marketId": "1",
+            "outcomes": {
+                "Home": "1",
+                "Draw": "2",
+                "Away": "3"
+            }
+        },
+        "1xbet": {
+            "marketId": "1",
+            "outcomes": {
+                "Home": "W1",
+                "Draw": "X",
+                "Away": "W2"
+            }
+        },
+        "bet9ja": {
+            "marketId": "1",
+            "outcomes": {
+                "Home": "1",
+                "Draw": "X",
+                "Away": "2"
+            }
+        }
+    },
+    "Over/Under": {
+        "sportybet": {
+            "marketId": "18",
+            "specifierFormat": "total={line}",
+            "outcomes": {
+                "Over": "12",
+                "Under": "13"
+            }
+        },
+        "1xbet": {
+            "marketId": "17",
+            "outcomes": {
+                "Over": "9",
+                "Under": "10"
+            }
+        },
+        "bet9ja": {
+            "marketId": "18",
+            "outcomes": {
+                "Over": "Over",
+                "Under": "Under"
+            }
+        }
+    },
+    "Both Teams To Score": {
+        "sportybet": {
+            "marketId": "29",
+            "outcomes": {
+                "Yes": "74",
+                "No": "76"
+            }
+        },
+        "1xbet": {
+            "marketId": "19",
+            "outcomes": {
+                "Yes": "1",
+                "No": "2"
+            }
+        },
+        "bet9ja": {
+            "marketId": "29",
+            "outcomes": {
+                "Yes": "Yes",
+                "No": "No"
+            }
+        }
+    },
+    "Double Chance": {
+        "sportybet": {
+            "marketId": "10",
+            "outcomes": {
+                "1X": "9",
+                "12": "10",
+                "X2": "11"
+            }
+        },
+        "1xbet": {
+            "marketId": "8",
+            "outcomes": {
+                "1X": "1",
+                "12": "2",
+                "X2": "3"
+            }
+        },
+        "bet9ja": {
+            "marketId": "10",
+            "outcomes": {
+                "1X": "1X",
+                "12": "12",
+                "X2": "X2"
+            }
+        }
+    }
+}
