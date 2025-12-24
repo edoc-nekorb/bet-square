@@ -49,29 +49,45 @@ export const matcher = {
 
         let normalized = name
             .toLowerCase()
-            .replace(/\b(fc|ac|sc|cf|as|afc|united|city|town|hotspur|real|inter|sporting|calcio|deportivo)\b/gi, '')
+            .replace(/\b(fc|ac|sc|cf|as|afc|united|city|town|hotspur|real|inter|sporting|calcio|deportivo|fk|sk|nk)\b/gi, '')
             .replace(/^\d+\.\s*/g, '')
             .replace(/\b\d+\.\s*/g, '')
             .replace(/\s+(05|04|1846|1899|1907|1909|1914|1916|1920|1948)$/g, '')
             .replace(/\b(fsv|sv|vfb|tsg|bsc|vfl|rsc)\b/gi, '')
-            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/[^a-z0-9\s]/g, '')  // Remove special chars like dots in P.A.O.K.
             .replace(/\s+/g, ' ')
             .trim();
+
+        const normalizedClean = normalized.replace(/\s/g, '');
 
         // Check alias database
         for (const [canonical, aliases] of Object.entries(teamAliases)) {
             const cleanCanonical = canonical.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const cleanAliases = aliases.map(a => a.toLowerCase().replace(/[^a-z0-9]/g, ''));
-            const normalizedClean = normalized.replace(/\s/g, '');
 
-            if (cleanCanonical.includes(normalizedClean) ||
-                normalizedClean.includes(cleanCanonical) ||
-                cleanAliases.includes(normalizedClean)) {
+            // Check if normalized name matches canonical
+            if (cleanCanonical === normalizedClean ||
+                cleanCanonical.includes(normalizedClean) ||
+                normalizedClean.includes(cleanCanonical)) {
+                console.log(`[Matcher] Alias found: "${name}" -> "${canonical}" (canonical match)`);
                 return canonical.replace(/_/g, ' ');
             }
+
+            // Check against all aliases
+            for (const alias of aliases) {
+                const cleanAlias = alias.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (cleanAlias === normalizedClean ||
+                    cleanAlias.includes(normalizedClean) ||
+                    normalizedClean.includes(cleanAlias)) {
+                    console.log(`[Matcher] Alias found: "${name}" -> "${canonical}" (via alias "${alias}")`);
+                    return canonical.replace(/_/g, ' ');
+                }
+            }
         }
+
+        console.log(`[Matcher] No alias found for: "${name}" -> using normalized: "${normalized}"`);
         return normalized;
     },
+
 
     /**
      * Normalize full item_name (match string like "Home - Away")

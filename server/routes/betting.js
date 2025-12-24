@@ -66,12 +66,8 @@ router.post('/book', authenticateToken, async (req, res) => {
 });
 
 router.post('/convert', authenticateToken, async (req, res) => {
-    // Check if user is premium
-    if (req.user.plan === 'free' && req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'To use our conversion feature you need to be a premium user' });
-    }
-
     const { code, source, target, region } = req.body;
+
 
     try {
         // 1. Extract

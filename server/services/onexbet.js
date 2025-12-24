@@ -1,5 +1,8 @@
 import axios from 'axios';
 import { matcher } from './matcher.js';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const teamAliases = require('../data/teamAliases.json');
 
 export const onexbet = {
     /**
@@ -181,25 +184,55 @@ export const onexbet = {
 
     findEvent: async (home, away, date) => {
         try {
-            // Use the home team name for search
-            // First try the original name (better for search), then normalized
-            const originalQuery = home.replace(/\b(FC|SC|CF)\b/gi, '').trim(); // Remove common prefixes
-            const normalizedHome = matcher.normalizeTeamName(home);
+            // Helper function to get search queries from aliases (Adapted from SportyBet service)
+            const getSearchQueries = (teamName) => {
+                const queries = [];
+                // Clean the team name first - remove special chars like dots in P.A.O.K.
+                const cleanedName = teamName.replace(/\./g, '').trim();
+                const teamLower = cleanedName.toLowerCase().trim();
 
-            // Try multiple search strategies
-            const searchQueries = [
-                originalQuery,           // Original name without FC/SC
-                normalizedHome,           // Fully normalized
-                home.split(' ').find(w => w.length > 3) || home.split(' ')[0] // Longest word > 3 chars
-            ].filter(q => q && q.length > 2);
+                // 1. Add basic variations
+                queries.push(matcher.normalizeTeamName(home));
+                queries.push(home); // Original e.g. "PAOK"
+                queries.push(cleanedName); // e.g. "PAOK"
 
-            console.log(`[1xBet SEARCH DEBUG] Searching for: "${home}" -> queries: ${JSON.stringify(searchQueries)}`);
+                // 2. Expand using Alias Database
+                // We check if the input name matches any Key or any Value in the alias DB
+                for (const [canonical, aliases] of Object.entries(teamAliases)) {
+                    const allNames = [canonical, ...aliases].map(n => n.toLowerCase().replace(/\./g, '').trim());
 
-            let allResults = [];
+                    // distinct check logic similar to SportyBet
+                    if (allNames.includes(teamLower)) {
+                        console.log(`[1xBet SEARCH DEBUG] Alias expansion found for "${home}" -> "${canonical}"`);
 
-            // Try each query until we get results
+                        // Add canonical matches
+                        queries.push(canonical);
+                        // Add all aliases (including those with dots!)
+                        queries.push(...aliases);
+                        break;
+                    }
+                }
+
+                return [
+                    ...queries,
+                    home.replace(/\b(FC|SC|CF|AC|AS|AFC|SV|VfB|1\.|FSV|US|SS)\b/gi, '').trim(),
+                    home.split(' ').find(w => w.length > 3) || home.split(' ')[0]
+                ].filter(q => q && q.length > 2);
+            };
+
+            // Improved search logic
+            const queries = getSearchQueries(home);
+            // Deduplicate
+            const searchQueries = [...new Set(queries)];
+
+            console.log(`[1xBet SEARCH DEBUG] Searching for: "${home}" vs "${away}" -> queries: ${JSON.stringify(searchQueries)}`);
+
+            let eventsFromAllQueries = [];
+            let bestMatchFromAllQueries = null;
+
+            // Try each search query
             for (const query of searchQueries) {
-                if (allResults.length > 0) break;
+                if (bestMatchFromAllQueries) break;
 
                 const lineUrl = `https://1xbet.ng/service-api/LineFeed/Web_SearchZip?text=${encodeURIComponent(query)}&limit=50&gr=412&lng=en&country=132&mode=4&partner=159&userId=0`;
                 const liveUrl = `https://1xbet.ng/service-api/LiveFeed/Web_SearchZip?text=${encodeURIComponent(query)}&limit=50&gr=412&lng=en&country=132&mode=4&partner=159&userId=0`;
@@ -215,36 +248,56 @@ export const onexbet = {
 
                 const lineResults = lineRes.data?.Value || [];
                 const liveResults = liveRes.data?.Value || [];
-                allResults = [...lineResults, ...liveResults];
+                const currentEvents = [...lineResults, ...liveResults];
 
-                if (allResults.length > 0) {
-                    console.log(`[1xBet SEARCH DEBUG] Query "${query}" found ${allResults.length} results`);
+                if (currentEvents.length > 0) {
+                    console.log(`[1xBet SEARCH DEBUG] Query "${query}" found ${currentEvents.length} results`);
+
+                    // Filter results using our fuzzy matcher
+                    const potentialMatches = currentEvents.map(r => ({
+                        id: r.I,
+                        gameId: r.I,
+                        home: r.O1,
+                        away: r.O2,
+                        date: new Date(r.S * 1000).toISOString(),
+                        timestamp: r.S * 1000
+                    }));
+
+                    // Check if we have a good match in this batch
+                    const match = matcher.findMatchingEvent({ home, away, date }, potentialMatches, 0.6);
+
+                    if (match) {
+                        console.log(`[1xBet SEARCH DEBUG] Match FOUND in query "${query}": ${match.home} vs ${match.away}`);
+                        bestMatchFromAllQueries = match;
+                        break;
+                    }
+
+                    // Accumulate events
+                    eventsFromAllQueries = [...eventsFromAllQueries, ...potentialMatches];
                 }
             }
 
-            console.log(`[1xBet SEARCH DEBUG] Total: ${allResults.length} results`);
+            if (bestMatchFromAllQueries) {
+                return bestMatchFromAllQueries;
+            }
 
-            if (allResults.length === 0) return null;
+            console.log(`[1xBet SEARCH DEBUG] Total unique events accumulated: ${eventsFromAllQueries.length}`);
 
-            // Filter results using our fuzzy matcher
-            const potentialMatches = allResults.map(r => ({
-                id: r.I,
-                home: r.O1,
-                away: r.O2,
-                date: new Date(r.S * 1000).toISOString(),
-                timestamp: r.S * 1000
-            }));
+            if (eventsFromAllQueries.length === 0) return null;
 
-            if (potentialMatches.length > 0) {
-                console.log(`[1xBet SEARCH DEBUG] First 3 results:`);
-                potentialMatches.slice(0, 3).forEach((m, i) => {
+            // Final fallback search across all unique events
+            const uniqueEvents = Array.from(new Map(eventsFromAllQueries.map(item => [item.id, item])).values());
+
+            if (uniqueEvents.length > 0) {
+                console.log(`[1xBet SEARCH DEBUG] First 3 unique results:`);
+                uniqueEvents.slice(0, 3).forEach((m, i) => {
                     console.log(`  [${i}] ${m.home} vs ${m.away} (ID: ${m.id})`);
                 });
             }
 
-            // Use lower threshold (0.5) to catch more matches with prefixes like "1."
-            const result = matcher.findMatchingEvent({ home, away, date }, potentialMatches, 0.5);
-            console.log(`[1xBet SEARCH DEBUG] Matcher result:`, result ? `Found: ${result.home} vs ${result.away} (ID: ${result.id})` : 'NOT FOUND');
+            // Use lower threshold (0.55) for fallback
+            const result = matcher.findMatchingEvent({ home, away, date }, uniqueEvents, 0.55);
+            console.log(`[1xBet SEARCH DEBUG] Matcher result (Final):`, result ? `Found: ${result.home} vs ${result.away} (ID: ${result.id})` : 'NOT FOUND');
 
             return result;
 

@@ -250,15 +250,28 @@ export const sportybet = {
             // Helper function to get search queries from aliases
             const getSearchQueries = (teamName) => {
                 const queries = [];
-                const teamLower = teamName.toLowerCase().trim();
+                // Clean the team name first - remove special chars like dots in P.A.O.K.
+                const cleanedName = teamName.replace(/\./g, '').trim();
+                const teamLower = cleanedName.toLowerCase().trim();
 
                 // PASS 1: Check for EXACT alias matches first (highest priority)
                 for (const [canonical, aliases] of Object.entries(teamAliases)) {
-                    const allNames = [canonical, ...aliases].map(n => n.toLowerCase().trim());
+                    const allNames = [canonical, ...aliases].map(n => n.toLowerCase().replace(/\./g, '').trim());
                     // Exact match - team name equals one of the aliases exactly
                     if (allNames.includes(teamLower)) {
-                        const sortedAliases = [canonical, ...aliases].sort((a, b) => a.length - b.length);
+                        // Sort by length DESCENDING - prefer longer, more specific names
+                        // This avoids false matches like "MFF" matching Myanmar teams
+                        const sortedAliases = [canonical, ...aliases]
+                            .filter(a => a.length > 3) // Skip short abbreviations
+                            .sort((a, b) => b.length - a.length);
+
+                        // Add the longer names first, then add short ones as fallback
                         queries.push(...sortedAliases.slice(0, 3));
+
+                        // Also add the canonical name if not already included
+                        if (!queries.includes(canonical) && canonical.length > 3) {
+                            queries.unshift(canonical);
+                        }
                         break;
                     }
                 }
@@ -267,13 +280,15 @@ export const sportybet = {
                 // This is lower priority to avoid "Milan" matching "Inter Milan"
                 if (queries.length === 0) {
                     for (const [canonical, aliases] of Object.entries(teamAliases)) {
-                        const allNames = [canonical, ...aliases].map(n => n.toLowerCase().trim());
+                        const allNames = [canonical, ...aliases].map(n => n.toLowerCase().replace(/\./g, '').trim());
                         const isWordMatch = allNames.some(n => {
                             const nWords = n.split(/\s+/);
                             return nWords.includes(teamLower);
                         });
                         if (isWordMatch) {
-                            const sortedAliases = [canonical, ...aliases].sort((a, b) => a.length - b.length);
+                            const sortedAliases = [canonical, ...aliases]
+                                .filter(a => a.length > 3)
+                                .sort((a, b) => b.length - a.length);
                             queries.push(...sortedAliases.slice(0, 3));
                             break;
                         }
@@ -283,13 +298,13 @@ export const sportybet = {
                 // FALLBACK: If no aliases found, use the original name variations
                 if (queries.length === 0) {
                     // Remove common prefixes/suffixes first
-                    const cleaned = teamName.replace(/\b(FC|SC|CF|AC|AS|AFC|SV|VfB|1\.|FSV|US|SS)\b/gi, '').trim();
+                    const cleaned = cleanedName.replace(/\b(FC|SC|CF|AC|AS|AFC|SV|VfB|1\.|FSV|US|SS)\b/gi, '').trim();
                     if (cleaned.length > 2) {
                         queries.push(cleaned);
                     }
-                    queries.push(teamName);
+                    queries.push(cleanedName);
                     // First word (if > 3 chars and not just prefix)
-                    const firstWord = teamName.split(' ')[0];
+                    const firstWord = cleanedName.split(' ')[0];
                     if (firstWord.length > 3 && !['AC', 'FC', 'SC', 'AS', 'US', 'SS'].includes(firstWord.toUpperCase()) && !queries.includes(firstWord)) {
                         queries.push(firstWord);
                     }
@@ -304,11 +319,13 @@ export const sportybet = {
 
             console.log(`[SportyBet SEARCH DEBUG] Searching for: "${home}" vs "${away}" -> queries: ${JSON.stringify(searchQueries)}`);
 
-            let allEvents = [];
+            let eventsFromAllQueries = [];
+            let bestMatchFromAllQueries = null;
 
-            // Try each search query until we get results
+            // Try each search query
             for (const query of searchQueries) {
-                if (allEvents.length > 0) break;
+                // If we already found a high-confidence match in a previous query, we can stop
+                if (bestMatchFromAllQueries) break;
 
                 const url = `https://www.sportybet.com/api/${region}/factsCenter/event/firstSearch?keyword=${encodeURIComponent(query)}&offset=0&pageSize=50&withOneUpMarket=true&withTwoUpMarket=true`;
 
@@ -333,40 +350,63 @@ export const sportybet = {
                         return !name.includes(' srl') && !tournament.includes('simulated reality');
                     });
 
-                    allEvents = [...filterSRL(preMatchEvents), ...filterSRL(liveEvents)];
+                    const currentEvents = [...filterSRL(preMatchEvents), ...filterSRL(liveEvents)];
 
-                    if (allEvents.length > 0) {
-                        console.log(`[SportyBet SEARCH DEBUG] Query "${query}" found ${allEvents.length} events`);
+                    if (currentEvents.length > 0) {
+                        console.log(`[SportyBet SEARCH DEBUG] Query "${query}" found ${currentEvents.length} events`);
+
+                        // Convert to match format
+                        const potentialMatches = currentEvents.map(e => ({
+                            id: e.eventId,
+                            gameId: e.eventId,
+                            home: e.homeTeamName,
+                            away: e.awayTeamName,
+                            date: new Date(e.estimateStartTime).toISOString(),
+                            timestamp: e.estimateStartTime,
+                            raw: e
+                        }));
+
+                        // Check if we have a good match in this batch
+                        // Use a slightly lower threshold to detect if we have a candidate
+                        const match = matcher.findMatchingEvent({ home, away, date }, potentialMatches, 0.6);
+
+                        if (match) {
+                            console.log(`[SportyBet SEARCH DEBUG] Match FOUND in query "${query}": ${match.home} vs ${match.away}`);
+                            bestMatchFromAllQueries = match;
+                            break; // Stop searching if we found the exact game!
+                        }
+
+                        // Accumulate events just in case we need to search broadly later (fallback)
+                        eventsFromAllQueries = [...eventsFromAllQueries, ...potentialMatches];
                     }
                 }
             }
 
-            console.log(`[SportyBet SEARCH DEBUG] Total: ${allEvents.length} events (after filtering SRL)`);
+            // If we found a match during the loop, return it
+            if (bestMatchFromAllQueries) {
+                return bestMatchFromAllQueries;
+            }
 
-            if (allEvents.length === 0) return null;
+            console.log(`[SportyBet SEARCH DEBUG] Total unique events accumulated: ${eventsFromAllQueries.length}`);
 
-            // Map to normalized format for matcher
-            const potentialMatches = allEvents.map(e => ({
-                id: e.eventId, // Betradar ID like "sr:match:64595720"
-                gameId: e.eventId, // Use eventId as gameId for booking
-                home: e.homeTeamName,
-                away: e.awayTeamName,
-                date: new Date(e.estimateStartTime).toISOString(),
-                timestamp: e.estimateStartTime,
-                raw: e
-            }));
+            if (eventsFromAllQueries.length === 0) return null;
+
+            // If we are here, no direct match was found in specific batches.
+            // Try one last relaxed search across ALL accumulated events
+            // Dedup events first by ID
+            const uniqueEvents = Array.from(new Map(eventsFromAllQueries.map(item => [item.id, item])).values());
 
             // Log first few results
-            if (potentialMatches.length > 0) {
-                console.log(`[SportyBet SEARCH DEBUG] First 3 results:`);
-                potentialMatches.slice(0, 3).forEach((m, i) => {
+            if (uniqueEvents.length > 0) {
+                console.log(`[SportyBet SEARCH DEBUG] First 3 unique results:`);
+                uniqueEvents.slice(0, 3).forEach((m, i) => {
                     console.log(`  [${i}] ${m.home} vs ${m.away} (ID: ${m.id})`);
                 });
             }
 
-            // Use fuzzy matcher to find the best match
-            const result = matcher.findMatchingEvent({ home, away, date }, potentialMatches, 0.5);
-            console.log(`[SportyBet SEARCH DEBUG] Matcher result:`, result ? `Found: ${result.home} vs ${result.away} (ID: ${result.id})` : 'NOT FOUND');
+            // Use fuzzy matcher to find the best match (relaxed)
+            const result = matcher.findMatchingEvent({ home, away, date }, uniqueEvents, 0.55);
+            console.log(`[SportyBet SEARCH DEBUG] Matcher result (Final attempt):`, result ? `Found: ${result.home} vs ${result.away} (ID: ${result.id})` : 'NOT FOUND');
 
             return result;
 

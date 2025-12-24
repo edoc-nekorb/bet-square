@@ -1454,8 +1454,7 @@
     ],
     "Panathinaikos": [
         "Panathinaikos",
-        "Panathinaikos FC",
-        "PAO"
+        "Panathinaikos FC"
     ],
     "AEK Athens": [
         "AEK Athens",
@@ -1463,8 +1462,10 @@
     ],
     "PAOK": [
         "PAOK",
+        "P.A.O.K.",
         "PAOK FC",
-        "Thessaloniki Club"
+        "Thessaloniki Club",
+        "PAOK Thessaloniki"
     ],
     "CFR Cluj": [
         "CFR Cluj",
