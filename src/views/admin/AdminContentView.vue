@@ -36,7 +36,7 @@ const predForm = ref({
     match_time: '00:00',
     result_status: 'pending'
 });
-const insightForm = ref({ title: '', source: '', image: '', excerpt: '' });
+const insightForm = ref({ title: '', source: '', image: '', excerpt: '', home_club_id: null, away_club_id: null });
 
 // Fetch Data
 const fetchData = async () => {
@@ -83,7 +83,7 @@ const resetForms = () => {
         match_time: '00:00',
         result_status: 'pending'
     };
-    insightForm.value = { title: '', source: '', image: '', excerpt: '' };
+    insightForm.value = { title: '', source: '', image: '', excerpt: '', home_club_id: null, away_club_id: null };
     isEditing.value = false;
     editingId.value = null;
 };
@@ -257,7 +257,29 @@ const handleConfirm = () => {
 
             <!-- INSIGHTS FORM -->
             <div v-if="activeTab === 'Insights'" class="form-grid">
-                <AppInput v-model="insightForm.title" label="Insight Title" placeholder="Enter headline" id="i-title" />
+                <div class="row-2">
+                    <AppAutocomplete 
+                        v-model="insightForm.home_club_id" 
+                        :items="clubsList"
+                        label="Home Team"
+                        placeholder="Search club..."
+                        displayKey="name"
+                        valueKey="id"
+                        imageKey="logo"
+                        @search="fetchClubs"
+                    />
+                    <AppAutocomplete 
+                        v-model="insightForm.away_club_id" 
+                        :items="clubsList"
+                        label="Away Team"
+                        placeholder="Search club..."
+                        displayKey="name"
+                        valueKey="id"
+                        imageKey="logo"
+                        @search="fetchClubs"
+                    />
+                </div>
+                <AppInput v-model="insightForm.title" label="Insight Title (Headline)" placeholder="e.g. Manchester United resurgence stops here?" id="i-title" />
                 <AppInput v-model="insightForm.source" label="Source" placeholder="e.g. Analyst Desk" id="i-source" />
                 <AppImageUpload v-model="insightForm.image" label="Insight Image" />
                 <div class="input-group">

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useRouter, RouterLink } from 'vue-router';
+import { useRouter, useRoute, RouterLink } from 'vue-router';
 import AppButton from '../components/ui/AppButton.vue';
 import AppInput from '../components/ui/AppInput.vue';
 import { auth } from '../services/api';
@@ -12,6 +12,8 @@ const username = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+const route = useRoute();
+const referralCode = ref(route.query.ref || '');
 const errorMsg = ref('');
 const isLoading = ref(false);
 
@@ -46,7 +48,9 @@ const handleSignup = async () => {
       password: password.value,
       firstName: firstName.value,
       lastName: lastName.value,
-      username: username.value
+      lastName: lastName.value,
+      username: username.value,
+      referralCode: referralCode.value
     });
     
     // Show OTP modal if verification required
@@ -152,6 +156,14 @@ const handleResendOTP = async () => {
         type="password"
         placeholder="Confirm your password"
         id="confirm-password"
+      />
+
+      <!-- Referral Code -->
+      <AppInput 
+        v-model="referralCode" 
+        label="Referral Code (Optional)" 
+        placeholder="Enter code if you have one"
+        id="referral-code"
       />
 
       <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>

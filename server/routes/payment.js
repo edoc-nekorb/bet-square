@@ -196,10 +196,37 @@ router.post('/verify-subscription', authenticateToken, async (req, res) => {
                 );
 
                 // 5. Log Subscription History
-                await connection.execute(
+                const [subResult] = await connection.execute(
                     'INSERT INTO user_subscriptions (user_id, plan_id, amount, end_date, status) VALUES (?, ?, ?, ?, ?)',
                     [userId, planId, amount, expiry, 'active']
                 );
+
+                // 6. Referral Commission
+                try {
+                    const [referrerRows] = await connection.execute('SELECT referrer_id FROM users WHERE id = ?', [userId]);
+                    const referrerId = referrerRows[0]?.referrer_id;
+
+                    if (referrerId) {
+                        // Get Rate (Default 5%)
+                        const [settings] = await connection.execute("SELECT setting_value FROM system_settings WHERE setting_key = 'referral_percentage'");
+                        const rate = settings.length > 0 ? parseFloat(settings[0].setting_value) : 5;
+
+                        const commission = (amount * rate) / 100;
+
+                        if (commission > 0) {
+                            // Credit Referrer
+                            await connection.execute('UPDATE users SET balance = balance + ? WHERE id = ?', [commission, referrerId]);
+                            // Log Earnings
+                            await connection.execute(
+                                'INSERT INTO referral_earnings (referrer_id, referred_user_id, subscription_id, amount, status) VALUES (?, ?, ?, ?, ?)',
+                                [referrerId, userId, subResult.insertId, commission, 'paid']
+                            );
+                        }
+                    }
+                } catch (refError) {
+                    console.error('Referral Commission Error (Non-fatal):', refError);
+                    // Swallow error so subscription doesn't fail
+                }
 
                 await connection.commit();
                 res.json({ message: 'Subscription successful', plan: plan.name, expires: expiry });
@@ -247,6 +274,56 @@ router.get('/history', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Get History Error:', error);
         res.status(500).json({ error: 'Failed to fetch history' });
+    }
+});
+
+// Request Withdrawal
+router.post('/withdraw', authenticateToken, async (req, res) => {
+    const { amount, bankDetails } = req.body; // bankDetails: { bankName, accountNumber, accountName }
+    const userId = req.user.id;
+
+    if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
+    if (!bankDetails) return res.status(400).json({ error: 'Bank details required' });
+
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    try {
+        // Check Balance
+        const [users] = await connection.execute('SELECT balance FROM users WHERE id = ? FOR UPDATE', [userId]);
+        const currentBalance = parseFloat(users[0].balance || 0);
+
+        if (currentBalance < amount) {
+            throw new Error('Insufficient balance');
+        }
+
+        // Deduct Balance (Encumber funds)
+        await connection.execute('UPDATE users SET balance = balance - ? WHERE id = ?', [amount, userId]);
+
+        // Log Transaction (Pending)
+        const ref = `WDR_${Date.now()}_${Math.random().toString(36).substring(7).toUpperCase()}`;
+        await connection.execute(
+            'INSERT INTO transactions (user_id, amount, reference, status, type, bank_details, description) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [
+                userId,
+                amount,
+                ref,
+                'pending',
+                'withdrawal',
+                JSON.stringify(bankDetails),
+                'Withdrawal Request'
+            ]
+        );
+
+        await connection.commit();
+        res.json({ message: 'Withdrawal request submitted for approval.', newBalance: currentBalance - amount });
+
+    } catch (err) {
+        await connection.rollback();
+        console.error('Withdrawal Error:', err);
+        res.status(400).json({ error: err.message || 'Withdrawal failed' });
+    } finally {
+        connection.release();
     }
 });
 

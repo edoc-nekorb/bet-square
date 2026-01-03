@@ -76,9 +76,13 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Helper to generate referral code
+import crypto from 'crypto';
+const generateRefCode = () => 'REF-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+
 // SIGNUP
 router.post('/signup', async (req, res) => {
-    const { email, password, firstName, lastName, username } = req.body;
+    const { email, password, firstName, lastName, username, referralCode } = req.body;
 
     try {
         // 1. Validate email domain
@@ -102,7 +106,6 @@ router.post('/signup', async (req, res) => {
             });
         }
 
-
         // 3. Check if email already exists
         const [existingEmail] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
         if (existingEmail.length > 0) {
@@ -115,18 +118,33 @@ router.post('/signup', async (req, res) => {
             return res.status(400).json({ error: 'This username is already taken. Please choose another.' });
         }
 
-        // 5. Create user
+        // 5. Handle Referral Code (Lookup Referrer)
+        let referrerId = null;
+        if (referralCode) {
+            const [referrers] = await db.execute('SELECT id FROM users WHERE referral_code = ?', [referralCode]);
+            if (referrers.length > 0) {
+                referrerId = referrers[0].id;
+            }
+            // If invalid code, we just ignore it (standard practice to avoid friction)
+        }
+
+        // 6. Generate Referral Code for New User
+        // Simple collision handling: try once, if fails, user can try again (rare) or duplicate key error is caught.
+        // For robustness, usually loop, but collision probability of 6 hex chars (16^6 = 16M) is low for MVP.
+        const newReferralCode = generateRefCode();
+
+        // 7. Create user
         const hashedPassword = await bcrypt.hash(password, 10);
         const fullName = `${firstName} ${lastName}`;
         const otp = generateOTP();
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         const [result] = await db.execute(
-            'INSERT INTO users (email, password, full_name, username, role, email_verified, verification_code, verification_expires) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [email, hashedPassword, fullName, username, 'user', false, otp, otpExpires]
+            'INSERT INTO users (email, password, full_name, username, role, email_verified, verification_code, verification_expires, referrer_id, referral_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [email, hashedPassword, fullName, username, 'user', false, otp, otpExpires, referrerId, newReferralCode]
         );
 
-        // 6. Send verification email
+        // 8. Send verification email
         try {
             await sendVerificationEmail(email, otp, username);
         } catch (emailError) {
@@ -221,7 +239,7 @@ router.get('/me', async (req, res) => {
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         const [users] = await db.execute(
-            'SELECT id, email, role, full_name, username, balance, plan, plan_expires_at, email_verified FROM users WHERE id = ?',
+            'SELECT id, email, role, full_name, username, balance, plan, plan_expires_at, email_verified, referral_code FROM users WHERE id = ?',
             [decoded.id]
         );
         if (users.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -229,6 +247,31 @@ router.get('/me', async (req, res) => {
         res.json(users[0]);
     } catch (err) {
         res.status(401).json({ error: 'Invalid token' });
+    }
+});
+
+// Referral Stats
+router.get('/referral-stats', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token' });
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const userId = decoded.id;
+
+        // Count Referred
+        const [refUsers] = await db.execute('SELECT COUNT(*) as count FROM users WHERE referrer_id = ?', [userId]);
+
+        // Sum Earnings
+        const [earnings] = await db.execute('SELECT SUM(amount) as total FROM referral_earnings WHERE referrer_id = ?', [userId]);
+
+        res.json({
+            referredCount: refUsers[0].count,
+            totalEarnings: parseFloat(earnings[0].total || 0)
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch stats' });
     }
 });
 

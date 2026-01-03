@@ -1,0 +1,698 @@
+[
+  {
+    "source": "SportyBet",
+    "marketName": "1X2",
+    "marketId": "1",
+    "selectionName": "Home",
+    "selectionId": "1",
+    "discoveredAt": "2025-12-24T16:59:33.883Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Over/Under",
+    "marketId": "18",
+    "selectionName": "Over 0.5",
+    "selectionId": "12",
+    "discoveredAt": "2025-12-24T16:59:34.216Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Double Chance",
+    "marketId": "10",
+    "selectionName": "Home or Draw",
+    "selectionId": "9",
+    "discoveredAt": "2025-12-24T16:59:34.615Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "1st Goal",
+    "marketId": "8",
+    "selectionName": "Home",
+    "selectionId": "6",
+    "discoveredAt": "2025-12-24T16:59:34.795Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Handicap 0:1",
+    "marketId": "14",
+    "selectionName": "Home (0:1)",
+    "selectionId": "1711",
+    "discoveredAt": "2025-12-24T16:59:35.000Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Asian Handicap -2.5",
+    "marketId": "16",
+    "selectionName": "Home (-2.5)",
+    "selectionId": "1714",
+    "discoveredAt": "2025-12-24T16:59:35.379Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Asian Handicap -2.5",
+    "marketId": "16",
+    "selectionName": "Away (+2.5)",
+    "selectionId": "1715",
+    "discoveredAt": "2025-12-24T16:59:35.585Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Feyenoord Rotterdam Over/Under",
+    "marketId": "19",
+    "selectionName": "Over 0.5",
+    "selectionId": "12",
+    "discoveredAt": "2025-12-24T16:59:35.774Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Sturm Graz Over/Under",
+    "marketId": "20",
+    "selectionName": "Over 0.5",
+    "selectionId": "12",
+    "discoveredAt": "2025-12-24T16:59:36.021Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Any Team To Score 3 or More Goals in a Row",
+    "marketId": "60020",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:36.196Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Any Team To Score 2 or More Goals in a Row",
+    "marketId": "60010",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:36.403Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Team To Score 2 or More Goals in a Row",
+    "marketId": "60011",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:36.594Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Team To Score 3 or More Goals in a Row",
+    "marketId": "60021",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:36.827Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Away Team To Score 2 or More Goals in a Row",
+    "marketId": "60012",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:37.084Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Draw No Bet",
+    "marketId": "11",
+    "selectionName": "Home",
+    "selectionId": "4",
+    "discoveredAt": "2025-12-24T16:59:37.294Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Correct Score",
+    "marketId": "45",
+    "selectionName": "1:0",
+    "selectionId": "276",
+    "discoveredAt": "2025-12-24T16:59:37.482Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Both Halves Over 1.5",
+    "marketId": "58",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:37.690Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Both Halves Under 1.5",
+    "marketId": "59",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:37.903Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Team to Score In Both Halves",
+    "marketId": "56",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:38.097Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Away Team to Score In Both Halves",
+    "marketId": "57",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:38.299Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Odd/Even",
+    "marketId": "26",
+    "selectionName": "Odd",
+    "selectionId": "70",
+    "discoveredAt": "2025-12-24T16:59:38.542Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Team Odd/Even",
+    "marketId": "27",
+    "selectionName": "Odd",
+    "selectionId": "70",
+    "discoveredAt": "2025-12-24T16:59:38.713Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Away Team Odd/Even",
+    "marketId": "28",
+    "selectionName": "Odd",
+    "selectionId": "70",
+    "discoveredAt": "2025-12-24T16:59:39.024Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "1st Half - 1X2",
+    "marketId": "60",
+    "selectionName": "Home",
+    "selectionId": "1",
+    "discoveredAt": "2025-12-24T16:59:39.195Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "1st Half - Over/Under",
+    "marketId": "68",
+    "selectionName": "Over 0.5",
+    "selectionId": "12",
+    "discoveredAt": "2025-12-24T16:59:39.428Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "1st Half - Double Chance",
+    "marketId": "63",
+    "selectionName": "Home or Draw",
+    "selectionId": "9",
+    "discoveredAt": "2025-12-24T16:59:39.611Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "1st Half - Handicap",
+    "marketId": "65",
+    "selectionName": "Home (0:1)",
+    "selectionId": "1711",
+    "discoveredAt": "2025-12-24T16:59:39.807Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "1st half - Feyenoord Rotterdam Over/Under",
+    "marketId": "69",
+    "selectionName": "Over 0.5",
+    "selectionId": "12",
+    "discoveredAt": "2025-12-24T16:59:40.017Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "1st half - Sturm Graz Over/Under",
+    "marketId": "70",
+    "selectionName": "Over 0.5",
+    "selectionId": "12",
+    "discoveredAt": "2025-12-24T16:59:40.279Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Goal Range",
+    "marketId": "25",
+    "selectionName": "0-1",
+    "selectionId": "sr:goal_range:7+:1342",
+    "discoveredAt": "2025-12-24T16:59:40.448Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Team Clean Sheet",
+    "marketId": "31",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:40.632Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Away Team Clean Sheet",
+    "marketId": "32",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:40.844Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Team to Win Both Halves",
+    "marketId": "48",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:41.086Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Team to Win Either Half",
+    "marketId": "50",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:41.247Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Highest Scoring Half",
+    "marketId": "52",
+    "selectionName": "1st half",
+    "selectionId": "436",
+    "discoveredAt": "2025-12-24T16:59:41.446Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Team or GG",
+    "marketId": "860",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:42.061Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Draw or GG",
+    "marketId": "861",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:42.253Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Away Team or GG",
+    "marketId": "862",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:42.452Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Away or Over 2.5",
+    "marketId": "858",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:42.680Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Draw or Over 2.5",
+    "marketId": "856",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:42.848Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Draw or Under 2.5",
+    "marketId": "857",
+    "selectionName": "Yes",
+    "selectionId": "74",
+    "discoveredAt": "2025-12-24T16:59:43.062Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Multigoals",
+    "marketId": "548",
+    "selectionName": "1-2",
+    "selectionId": "1730",
+    "discoveredAt": "2025-12-24T16:59:43.256Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Home Multigoals",
+    "marketId": "549",
+    "selectionName": "1-2",
+    "selectionId": "1746",
+    "discoveredAt": "2025-12-24T16:59:43.452Z"
+  },
+  {
+    "source": "SportyBet",
+    "marketName": "Multiscores",
+    "marketId": "551",
+    "selectionName": "1:0, 2:0 or 3:0",
+    "selectionId": "1750",
+    "discoveredAt": "2025-12-24T16:59:43.781Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "1X2 + Each Team To Score",
+    "marketId": "15770",
+    "selectionName": "W1 And Both Teams To Score - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:07.548Z"
+  },
+  {
+    "source": "sportybet",
+    "marketName": "Handicap",
+    "marketId": "MISSING_TARGET",
+    "selectionName": "N/A",
+    "selectionId": "N/A",
+    "discoveredAt": "2025-12-24T17:11:07.993Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Asian Total",
+    "marketId": "3827",
+    "selectionName": "Total Over (2.25)",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:08.204Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Total 1",
+    "marketId": "11",
+    "selectionName": "Individual Total 1 Over (1)",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:08.662Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Correct Score",
+    "marketId": "731",
+    "selectionName": "Correct Score 1-0",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:09.145Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Even/Odd",
+    "marketId": "182",
+    "selectionName": "Total Even - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:09.599Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Goal In Both Halves",
+    "marketId": "478",
+    "selectionName": "Goals Scored In Both Halves - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:09.982Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Team 1 To Win Either Half",
+    "marketId": "504",
+    "selectionName": "Team 1 To Win At Least One Half - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:10.232Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Goal In Half",
+    "marketId": "651",
+    "selectionName": "First Goal in 1st Half",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:10.474Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Win Or Draw In Minute",
+    "marketId": "1192",
+    "selectionName": "1X In (15) Minute",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:10.962Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "To Keep Clean Sheet",
+    "marketId": "2803",
+    "selectionName": "Team 1 To Keep Clean Sheet",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:11.411Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Team 1 To Score Goals In A Row",
+    "marketId": "1125",
+    "selectionName": "Team 1 To Score (2) Or More Goals In A Row - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:11.639Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Correct Score - Group Bet",
+    "marketId": "7197",
+    "selectionName": "Correct Score 0-0 Or 1-0 Or 0-1 - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:11:11.940Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "1X2 + Each Team To Score",
+    "marketId": "15770",
+    "selectionName": "W1 And Both Teams To Score - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:39.730Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Asian Total",
+    "marketId": "3827",
+    "selectionName": "Total Over (2.25)",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:40.419Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Total 1",
+    "marketId": "11",
+    "selectionName": "Individual Total 1 Over (1)",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:40.851Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Correct Score",
+    "marketId": "731",
+    "selectionName": "Correct Score 1-0",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:41.360Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Goal In Both Halves",
+    "marketId": "478",
+    "selectionName": "Goals Scored In Both Halves - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:42.286Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Team 1 To Win Either Half",
+    "marketId": "504",
+    "selectionName": "Team 1 To Win At Least One Half - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:42.573Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Goal In Half",
+    "marketId": "651",
+    "selectionName": "First Goal in 1st Half",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:42.800Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Win Or Draw In Minute",
+    "marketId": "1192",
+    "selectionName": "1X In (15) Minute",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:43.322Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Team 1 To Score Goals In A Row",
+    "marketId": "1125",
+    "selectionName": "Team 1 To Score (2) Or More Goals In A Row - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:44.024Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Correct Score - Group Bet",
+    "marketId": "7197",
+    "selectionName": "Correct Score 0-0 Or 1-0 Or 0-1 - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:15:44.285Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "1X2 + Each Team To Score",
+    "marketId": "15770",
+    "selectionName": "W1 And Both Teams To Score - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:10.488Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Asian Total",
+    "marketId": "3827",
+    "selectionName": "Total Over (2.25)",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:11.136Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Total 1",
+    "marketId": "11",
+    "selectionName": "Individual Total 1 Over (1)",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:11.623Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Correct Score",
+    "marketId": "731",
+    "selectionName": "Correct Score 1-0",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:12.131Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Goal In Both Halves",
+    "marketId": "478",
+    "selectionName": "Goals Scored In Both Halves - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:12.973Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Team 1 To Win Either Half",
+    "marketId": "504",
+    "selectionName": "Team 1 To Win At Least One Half - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:13.295Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Goal In Half",
+    "marketId": "651",
+    "selectionName": "First Goal in 1st Half",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:13.504Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Win Or Draw In Minute",
+    "marketId": "1192",
+    "selectionName": "1X In (15) Minute",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:13.956Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Team 1 To Score Goals In A Row",
+    "marketId": "1125",
+    "selectionName": "Team 1 To Score (2) Or More Goals In A Row - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:14.841Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Correct Score - Group Bet",
+    "marketId": "7197",
+    "selectionName": "Correct Score 0-0 Or 1-0 Or 0-1 - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:26:15.092Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "1X2 + Each Team To Score",
+    "marketId": "15770",
+    "selectionName": "W1 And Both Teams To Score - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:50.752Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Asian Total",
+    "marketId": "3827",
+    "selectionName": "Total Over (2.25)",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:51.471Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Total 1",
+    "marketId": "11",
+    "selectionName": "Individual Total 1 Over (1)",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:51.968Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Correct Score",
+    "marketId": "731",
+    "selectionName": "Correct Score 1-0",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:52.459Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Goal In Both Halves",
+    "marketId": "478",
+    "selectionName": "Goals Scored In Both Halves - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:53.394Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Team 1 To Win Either Half",
+    "marketId": "504",
+    "selectionName": "Team 1 To Win At Least One Half - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:53.667Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Goal In Half",
+    "marketId": "651",
+    "selectionName": "First Goal in 1st Half",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:53.908Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Win Or Draw In Minute",
+    "marketId": "1192",
+    "selectionName": "1X In (15) Minute",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:54.530Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Team 1 To Score Goals In A Row",
+    "marketId": "1125",
+    "selectionName": "Team 1 To Score (2) Or More Goals In A Row - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:55.208Z"
+  },
+  {
+    "source": "1xBet",
+    "marketName": "Correct Score - Group Bet",
+    "marketId": "7197",
+    "selectionName": "Correct Score 0-0 Or 1-0 Or 0-1 - Yes",
+    "selectionId": "undefined",
+    "discoveredAt": "2025-12-24T17:35:55.476Z"
+  }
+]

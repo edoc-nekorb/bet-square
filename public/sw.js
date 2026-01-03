@@ -46,6 +46,9 @@ self.addEventListener('fetch', (event) => {
     // Skip API calls - always go to network
     if (event.request.url.includes('/api/')) return;
 
+    // Skip cross-origin requests (like images from backend port 3000)
+    if (!event.request.url.startsWith(self.location.origin)) return;
+
     event.respondWith(
         fetch(event.request)
             .then((response) => {

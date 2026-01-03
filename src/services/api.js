@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3000/api'
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 });
 
 // Request interceptor to add token
@@ -13,12 +13,28 @@ api.interceptors.request.use(config => {
     return config;
 });
 
+// Response interceptor to handle auth errors
+api.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (!window.location.pathname.includes('/login')) {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const auth = {
     login: (email, password) => api.post('/auth/login', { email, password }),
     signup: (userData) => api.post('/auth/signup', userData),
     verifyOTP: (email, otp) => api.post('/auth/verify-otp', { email, otp }),
     resendOTP: (email) => api.post('/auth/resend-otp', { email }),
     me: () => api.get('/auth/me'),
+    getReferralStats: () => api.get('/auth/referral-stats'),
     logout: () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -88,7 +104,10 @@ export const admin = {
     getPlans: () => api.get('/admin/plans'),
     createPlan: (data) => api.post('/admin/plans', data),
     updatePlan: (id, data) => api.put(`/admin/plans/${id}`, data),
-    deletePlan: (id) => api.delete(`/admin/plans/${id}`)
+    deletePlan: (id) => api.delete(`/admin/plans/${id}`),
+
+    approveTransaction: (id) => api.post(`/admin/transactions/${id}/approve`),
+    rejectTransaction: (id) => api.post(`/admin/transactions/${id}/reject`)
 };
 
 export const payment = {
@@ -96,7 +115,8 @@ export const payment = {
     verify: (reference) => api.post('/payment/verify', { reference }),
     verifySubscription: (reference, planId) => api.post('/payment/verify-subscription', { reference, planId }),
     getHistory: (page = 1) => api.get('/payment/history', { params: { page } }),
-    charge: (amount, description) => api.post('/payment/charge', { amount, description })
+    charge: (amount, description) => api.post('/payment/charge', { amount, description }),
+    withdraw: (data) => api.post('/payment/withdraw', data)
 };
 
 export const notifications = {

@@ -172,7 +172,16 @@ router.delete('/predictions/:id', async (req, res) => {
 // --- INSIGHTS ---
 router.get('/insights', async (req, res) => {
     try {
-        const [rows] = await db.execute('SELECT * FROM match_insights ORDER BY created_at DESC');
+        const query = `
+            SELECT mi.*, 
+                   hc.name as home_club_name, hc.logo as home_club_logo,
+                   ac.name as away_club_name, ac.logo as away_club_logo
+            FROM match_insights mi
+            LEFT JOIN clubs hc ON mi.home_club_id = hc.id
+            LEFT JOIN clubs ac ON mi.away_club_id = ac.id
+            ORDER BY mi.created_at DESC
+        `;
+        const [rows] = await db.execute(query);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -180,10 +189,10 @@ router.get('/insights', async (req, res) => {
 });
 
 router.post('/insights', async (req, res) => {
-    const { title, source, image, excerpt } = req.body;
+    const { title, source, image, excerpt, home_club_id, away_club_id } = req.body;
     try {
-        await db.execute('INSERT INTO match_insights (title, source, image, excerpt) VALUES (?, ?, ?, ?)',
-            [title, source, image, excerpt]);
+        await db.execute('INSERT INTO match_insights (title, source, image, excerpt, home_club_id, away_club_id) VALUES (?, ?, ?, ?, ?, ?)',
+            [title, source, image, excerpt, home_club_id, away_club_id]);
         res.json({ message: 'Insight added' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -191,10 +200,10 @@ router.post('/insights', async (req, res) => {
 });
 
 router.put('/insights/:id', async (req, res) => {
-    const { title, source, image, excerpt } = req.body;
+    const { title, source, image, excerpt, home_club_id, away_club_id } = req.body;
     try {
-        await db.execute('UPDATE match_insights SET title=?, source=?, image=?, excerpt=? WHERE id=?',
-            [title, source, image, excerpt, req.params.id]);
+        await db.execute('UPDATE match_insights SET title=?, source=?, image=?, excerpt=?, home_club_id=?, away_club_id=? WHERE id=?',
+            [title, source, image, excerpt, home_club_id, away_club_id, req.params.id]);
         res.json({ message: 'Insight updated' });
     } catch (err) {
         res.status(500).json({ error: err.message });

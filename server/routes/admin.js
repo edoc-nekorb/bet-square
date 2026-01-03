@@ -217,7 +217,8 @@ router.get('/stats', async (req, res) => {
         // User asked for "Revenue". Let's sum successful generic deposits for now or subscription sales.
         // Best proxy for now: Sum of all successful transactions of type 'deposit' or 'subscription' (if we add that type).
         // The current payment logic uses 'deposit'.
-        const [revenueRes] = await db.execute("SELECT SUM(amount) as total FROM transactions WHERE status='success' AND type='deposit'");
+        // Revenue: Sum of successful deposits AND subscriptions
+        const [revenueRes] = await db.execute("SELECT SUM(amount) as total FROM transactions WHERE status='success' AND (type='deposit' OR type='subscription')");
         stats.revenue = revenueRes[0].total || 0;
 
         // Active Posts (News + Predictions + Insights)
@@ -269,6 +270,49 @@ router.get('/transactions', async (req, res) => {
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// Approve Transaction (Withdrawal)
+router.post('/transactions/:id/approve', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.execute("UPDATE transactions SET status='success' WHERE id=? AND type='withdrawal'", [id]);
+        // In a real system, this would trigger the Payout API (e.g. Paystack Transfer)
+        res.json({ message: 'Withdrawal Approved' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Reject Transaction (Withdrawal)
+router.post('/transactions/:id/reject', async (req, res) => {
+    const { id } = req.params;
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    try {
+        // Get transaction to verify it is pending and get amount
+        const [txs] = await connection.execute("SELECT amount, user_id, status FROM transactions WHERE id = ? FOR UPDATE", [id]);
+
+        if (txs.length === 0) throw new Error('Transaction not found');
+        const tx = txs[0];
+
+        if (tx.status !== 'pending') throw new Error('Transaction is not pending');
+
+        // Refund User Balance
+        await connection.execute("UPDATE users SET balance = balance + ? WHERE id = ?", [tx.amount, tx.user_id]);
+
+        // Update Status
+        await connection.execute("UPDATE transactions SET status = 'failed', description = CONCAT(COALESCE(description, ''), ' [Rejected]') WHERE id = ?", [id]);
+
+        await connection.commit();
+        res.json({ message: 'Withdrawal Rejected and Refunded' });
+    } catch (err) {
+        await connection.rollback();
+        res.status(500).json({ error: err.message });
+    } finally {
+        connection.release();
     }
 });
 

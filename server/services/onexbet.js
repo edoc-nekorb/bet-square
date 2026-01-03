@@ -35,19 +35,25 @@ export const onexbet = {
             const events = data.Value?.Events || [];
 
             return events.map(event => {
+                // Extract Param into specifier for mapping usage
+                let specifier = '';
+                const paramVal = event.Param || event.P;
+                if (paramVal !== undefined) {
+                    specifier = `param=${paramVal}`;
+                }
+
                 return {
-                    id: event.GameId,
-                    gameId: event.GameId,
+                    gameId: event.GameId || event.ConstId,
                     home: event.Opp1,
                     away: event.Opp2,
-                    league: event.Liga,
-                    country: event.ConstCategory || 'World',
-                    date: new Date(event.Start * 1000).toISOString(),
-                    timestamp: event.Start * 1000,
+                    league: event.Liga, // Keep league from original
+                    country: event.ConstCategory || 'World', // Keep country from original
+                    date: event.StartStr,
+                    timestamp: event.Start * 1000, // Keep timestamp from original
                     market: {
-                        id: event.Type, // 1xbet uses 'Type' for market type
-                        name: event.GroupName, // Market Group Name e.g. "Double Chance"
-                        specifier: '' // 1xBet structures might differ
+                        id: event.GroupCoefId || event.Type, // Market Type ID (e.g. 1)
+                        name: event.GroupName, // e.g. "1x2"
+                        specifier: specifier
                     },
                     selection: {
                         id: event.CoefId, // Or similar
@@ -107,8 +113,9 @@ export const onexbet = {
                 let param = 0;
                 if (m.market.specifier) {
                     const specifier = String(m.market.specifier);
-                    // Try to extract number from formats like "total=1.5" or just "1.5"
-                    const match = specifier.match(/(\d+\.?\d*)/);
+                    // Try to extract number from formats like "total=1.5", "1.5", "-2", or "0:1" (if fallback)
+                    // Updated regex to handle negative numbers
+                    const match = specifier.match(/(-?\d+\.?\d*)/);
                     if (match) {
                         param = parseFloat(match[1]);
                     }

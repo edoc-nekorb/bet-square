@@ -1,9 +1,10 @@
 <script setup>
 import { ChevronLeft, Bell, User, ArrowRightLeft, History } from 'lucide-vue-next';
 import { betting, auth } from '../services/api';
-import { onMounted, ref } from 'vue'; // Added ref
-import { useRouter } from 'vue-router'; // Restore this
+import { onMounted, ref } from 'vue'; 
+import { useRouter } from 'vue-router'; 
 import AppButton from '../components/ui/AppButton.vue';
+import AppModal from '../components/ui/AppModal.vue';
 import BottomNav from '../components/BottomNav.vue';
 
 const router = useRouter();
@@ -18,6 +19,14 @@ const conversionResult = ref(null);
 const errorMessage = ref('');
 const historyItems = ref([]);
 const userPlan = ref('free');
+
+// Beta Notice Logic
+const showBetaNotice = ref(false);
+
+const closeBetaNotice = () => {
+    showBetaNotice.value = false;
+    localStorage.setItem('has_seen_beta_notice_v2', 'true');
+};
 
 const fetchUser = async () => {
     try {
@@ -82,6 +91,11 @@ const fetchHistory = async () => {
 onMounted(() => {
     fetchUser();
     fetchHistory();
+    
+    // Check for beta notice
+    if (!localStorage.getItem('has_seen_beta_notice_v2')) {
+        showBetaNotice.value = true;
+    }
 });
 
 const getStatusColor = (status) => {
@@ -207,6 +221,22 @@ const getStatusColor = (status) => {
        </div>
 
     </div>
+
+    <AppModal :isOpen="showBetaNotice" title="System Update" @close="closeBetaNotice">
+       <div style="color: #d4d4d8; line-height: 1.6;">
+           <p>We're still actively improving our match conversion system to support more markets.</p>
+           <p style="margin-top: 1rem; font-weight: 500; color: white;">Currently, the following markets work best:</p>
+           <ul style="list-style: disc; margin-left: 1.5rem; margin-top: 0.5rem; color: #a1a1aa;">
+              <li style="margin-bottom: 0.25rem;">1X2 (Match Winner)</li>
+              <li style="margin-bottom: 0.25rem;">Over/Under Goals</li>
+              <li style="margin-bottom: 0.25rem;">Double Chance</li>
+              <li>Handicap (1xBet &rarr; SportyBet)</li>
+           </ul>
+       </div>
+       <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+          <AppButton variant="primary" @click="closeBetaNotice" style="width: auto; padding-left: 1.5rem; padding-right: 1.5rem;">Got it</AppButton>
+       </div>
+    </AppModal>
 
     <BottomNav />
   </div>

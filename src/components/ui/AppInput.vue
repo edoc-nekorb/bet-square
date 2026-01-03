@@ -30,7 +30,7 @@ const togglePassword = () => {
     <div class="input-wrapper">
       <input
         :id="id"
-        :type="inputType === 'password' && props.type === 'password' ? inputType : props.type"
+        :type="inputType"
         :value="modelValue"
         @input="$emit('update:modelValue', $event.target.value)"
         :placeholder="placeholder"

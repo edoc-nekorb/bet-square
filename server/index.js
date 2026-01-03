@@ -39,7 +39,8 @@ app.use(helmet({
             connectSrc: ["'self'", "http://localhost:*", "https://*"],
         }
     },
-    crossOriginEmbedderPolicy: false // Required for some image loading
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Hide X-Powered-By header

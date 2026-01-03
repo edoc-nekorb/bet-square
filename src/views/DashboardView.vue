@@ -428,14 +428,26 @@ const filterByDate = () => {
       <div v-if="activeTab === 'Expert Insight'" class="tab-content">
          <div v-if="isLoadingInsights" class="loading-state">Loading insights...</div>
          <div v-else-if="insights.length === 0" class="empty-state">No insights available</div>
-         <div v-else v-for="item in insights" :key="item.id" class="trend-card" @click="openNewsModal(item)">
-            <img v-if="item.image" :src="item.image" class="trend-img" />
-            <div class="trend-info">
-               <div class="trend-meta">
-                  <span class="t-source">{{ item.source }}</span> • <span>{{ new Date(item.created_at).toLocaleDateString() }}</span>
-               </div>
-               <h3 class="trend-title">{{ item.title }}</h3>
-               <p class="trend-excerpt">{{ item.body || item.excerpt }}</p>
+         <div v-else v-for="item in insights" :key="item.id" class="insight-card" @click="openNewsModal(item)">
+             <div class="teams-row">
+                <div class="team-side">
+                    <img :src="item.home_club_logo" class="team-logo" v-if="item.home_club_logo" />
+                    <div v-else class="logo-placeholder">{{ item.home_club_name ? item.home_club_name[0] : 'H' }}</div>
+                </div>
+                
+                <h2 class="card-title">{{ item.title }}</h2>
+
+                <div class="team-side">
+                    <img :src="item.away_club_logo" class="team-logo" v-if="item.away_club_logo" />
+                    <div v-else class="logo-placeholder">{{ item.away_club_name ? item.away_club_name[0] : 'A' }}</div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="meta-line">
+                    <span class="source-label">{{ item.source }}</span>
+                </div>
+                <p class="summary-text">{{ item.excerpt }}</p>
             </div>
          </div>
       </div>
@@ -1379,5 +1391,89 @@ const filterByDate = () => {
 .conf-text {
    font-size: 0.7rem;
    color: var(--color-text-secondary);
+}
+
+/* Insight Card Styles (Copied from BookView) */
+.insight-card {
+  background-color: var(--color-card);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #27272a;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.teams-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    gap: 1rem;
+    border-bottom: 1px solid #27272a;
+    background: linear-gradient(to bottom, #27272a, var(--color-card));
+}
+
+.team-side {
+    flex-shrink: 0;
+}
+
+.team-logo {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+
+.logo-placeholder {
+    width: 56px;
+    height: 56px;
+    background-color: #3f3f46;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #a1a1aa;
+}
+
+.card-title {
+    flex: 1;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.3;
+}
+
+.card-footer {
+    padding: 1rem 1.5rem;
+}
+
+.meta-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.source-label {
+    color: var(--color-primary);
+}
+
+.summary-text {
+    font-size: 0.9rem;
+    color: #d4d4d8;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 </style>

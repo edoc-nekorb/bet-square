@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Search, Download, Trash2, CheckCircle, XCircle, Clock } from 'lucide-vue-next';
 import { admin } from '../../services/api';
+import { useRoute } from 'vue-router';
 
 const searchQuery = ref('');
 const statusFilter = ref('All');
@@ -12,6 +13,15 @@ const isLoading = ref(false);
 import { useToast } from '@/composables/useToast';
 
 const { error } = useToast();
+const route = useRoute();
+
+onMounted(() => {
+    if (route.query.status) {
+        // Map 'pending' query to 'Pending' filter
+        statusFilter.value = route.query.status.charAt(0).toUpperCase() + route.query.status.slice(1);
+    }
+    fetchTransactions();
+});
 
 const fetchTransactions = async () => {
     isLoading.value = true;
@@ -26,7 +36,7 @@ const fetchTransactions = async () => {
     }
 };
 
-onMounted(fetchTransactions);
+
 
 const filteredTransactions = computed(() => {
   return transactions.value.filter(tx => {
@@ -46,17 +56,82 @@ const filteredTransactions = computed(() => {
     }
 
     return matchesSearch && matchesStatus && matchesDate;
+    return matchesSearch && matchesStatus && matchesDate;
   });
 });
+
+// Modal Logic
+const showReviewModal = ref(false);
+const selectedTx = ref(null);
+const isProcessing = ref(false);
+
+const openReview = (tx) => {
+    selectedTx.value = tx;
+    showReviewModal.value = true;
+};
+
+const closeReview = () => {
+    showReviewModal.value = false;
+    selectedTx.value = null;
+};
+
+const parseBankDetails = (json) => {
+    try {
+        const details = typeof json === 'string' ? JSON.parse(json) : json;
+        return `${details.bankName} - ${details.accountNumber} (${details.accountName})`;
+    } catch (e) {
+        return json || 'N/A';
+    }
+};
+
+const handleApprove = async (id) => {
+    if (!confirm('Approve this withdrawal? funds are already deducted.')) return;
+    isProcessing.value = true;
+    try {
+        await admin.approveTransaction(id); // Need to add to api service
+        // Manually update list
+        const tx = transactions.value.find(t => t.id === id);
+        if (tx) tx.status = 'success';
+        closeReview();
+        // success('Withdrawal Approved');
+    } catch (e) {
+        alert('Error: ' + e.message);
+    } finally {
+        isProcessing.value = false;
+    }
+};
+
+const handleReject = async (id) => {
+    if (!confirm('Reject withdrawal and refund user?')) return;
+    isProcessing.value = true;
+    try {
+        await admin.rejectTransaction(id); // Need to add to api service
+        const tx = transactions.value.find(t => t.id === id);
+        if (tx) tx.status = 'failed';
+        closeReview();
+    } catch (e) {
+        alert('Error: ' + e.message);
+    } finally {
+        isProcessing.value = false;
+    }
+};
 </script>
 
 <template>
   <div class="page-container">
      <div class="header">
         <h3 class="section-title">Latest Transactions</h3>
-        <button class="export-btn">
-           <Download :size="16" /> Export
-        </button>
+        <div class="header-actions">
+           <select v-model="statusFilter" class="filter-select">
+               <option>All</option>
+               <option>Success</option>
+               <option>Pending</option>
+               <option>Failed</option>
+           </select>
+            <button class="export-btn">
+               <Download :size="16" /> Export
+            </button>
+        </div>
      </div>
 
      <div class="table-container">
@@ -67,8 +142,9 @@ const filteredTransactions = computed(() => {
                  <th>User</th>
                  <th>Type</th>
                  <th>Amount</th>
-                 <th>Status</th>
+               <th>Status</th>
                  <th>Date</th>
+                 <th>Actions</th>
               </tr>
            </thead>
            <tbody>
@@ -88,10 +164,40 @@ const filteredTransactions = computed(() => {
                   </span>
                 </td>
                 <td>{{ new Date(tx.created_at).toLocaleDateString() }}</td>
+                <td>
+                    <button v-if="tx.status === 'pending' && tx.type === 'withdrawal'" class="action-btn" @click="openReview(tx)">Review</button>
+                </td>
               </tr>
            </tbody>
         </table>
      </div>
+
+     <!-- Review Modal -->
+     <div v-if="showReviewModal" class="modal-overlay">
+         <div class="modal-card">
+             <h3>Review Withdrawal</h3>
+             <div class="review-details">
+                 <div class="detail-row">
+                     <span>User:</span> <strong>{{ selectedTx?.user_name }}</strong>
+                 </div>
+                 <div class="detail-row">
+                     <span>Amount:</span> <strong>₦{{ parseFloat(selectedTx?.amount || 0).toLocaleString() }}</strong>
+                 </div>
+                 <div class="detail-row" v-if="selectedTx?.bank_details">
+                     <span>Bank:</span> 
+                     <div class="bank-info">
+                        {{ parseBankDetails(selectedTx.bank_details) }}
+                     </div>
+                 </div>
+             </div>
+             <div class="modal-actions">
+                 <button class="btn-cancel" @click="closeReview">Close</button>
+                 <button class="btn-reject" @click="handleReject(selectedTx.id)" :disabled="isProcessing">Reject</button>
+                 <button class="btn-approve" @click="handleApprove(selectedTx.id)" :disabled="isProcessing">Approve</button>
+             </div>
+         </div>
+     </div>
+
   </div>
 </template>
 
@@ -170,4 +276,68 @@ const filteredTransactions = computed(() => {
 }
 .status-badge.green { color: #4ade80; background-color: rgba(74, 222, 128, 0.1); }
 .status-badge.red { color: #f87171; background-color: rgba(248, 113, 113, 0.1); }
+.status-badge.pending { color: #fbbf24; background-color: rgba(251, 191, 36, 0.1); }
+.status-badge.failed { color: #f87171; background-color: rgba(248, 113, 113, 0.1); }
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.filter-select {
+    background: #27272a;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+.action-btn {
+    padding: 4px 12px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-card {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 400px;
+}
+.review-details {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #27272a;
+    padding-bottom: 0.5rem;
+}
+.bank-info {
+    text-align: right;
+    font-family: monospace;
+    max-width: 60%;
+}
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+.btn-cancel { padding: 8px 16px; color: #a1a1aa; }
+.btn-reject { padding: 8px 16px; background: #ef4444; color: white; border-radius: 6px; }
+.btn-approve { padding: 8px 16px; background: #22c55e; color: white; border-radius: 6px; }
 </style>

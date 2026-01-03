@@ -1,5 +1,5 @@
 <script setup>
-import { Bell, User, ChevronRight, LogOut, Link as LinkIcon, Building2, Palette, Clock, Trash2, Plus, ArrowLeft, ArrowRight } from 'lucide-vue-next';
+import { Bell, User, ChevronRight, LogOut, Link as LinkIcon, Building2, Palette, Clock, Trash2, Plus, ArrowLeft, ArrowRight, Copy, Banknote, Landmark } from 'lucide-vue-next';
 import BottomNav from '../components/BottomNav.vue';
 import AppButton from '../components/ui/AppButton.vue';
 import AppModal from '../components/ui/AppModal.vue';
@@ -11,8 +11,14 @@ const router = useRouter();
 const user = ref({
     full_name: 'User',
     email: 'user@example.com',
-    balance: '0.00'
+    balance: '0.00',
+    referral_code: ''
 });
+
+const referralStats = ref({ referredCount: 0, totalEarnings: 0 });
+const showWithdrawModal = ref(false);
+const withdrawForm = ref({ amount: '', bankName: '', accountNumber: '', accountName: '' });
+const isWithdrawing = ref(false);
 
 const isAddingFunds = ref(false);
 const showFundModal = ref(false);
@@ -108,9 +114,61 @@ const handleLogout = () => {
     router.push('/');
 };
 
+const fetchReferralStats = async () => {
+    try {
+        const { data } = await auth.getReferralStats();
+        referralStats.value = data;
+    } catch (e) { console.error(e); }
+};
+
+const copyReferralLink = async () => {
+    // Determine origin (localhost or prod)
+    const origin = window.location.origin;
+    const link = `${origin}/signup?ref=${user.value.referral_code}`;
+    try {
+        await navigator.clipboard.writeText(link);
+        alert('Referral link copied to clipboard!');
+    } catch (e) {
+        alert('Referral Link: ' + link);
+    }
+};
+
+const openWithdrawModal = () => {
+    withdrawForm.value = { amount: '', bankName: '', accountNumber: '', accountName: '' };
+    showWithdrawModal.value = true;
+};
+
+const confirmWithdraw = async () => {
+    const amt = parseFloat(withdrawForm.value.amount);
+    if (!amt || amt < 1000) {
+        alert('Minimum withdrawal is ₦1,000');
+        return;
+    }
+    isWithdrawing.value = true;
+    try {
+        const { data } = await payment.withdraw({
+            amount: amt,
+            bankDetails: {
+                bankName: withdrawForm.value.bankName,
+                accountNumber: withdrawForm.value.accountNumber,
+                accountName: withdrawForm.value.accountName
+            }
+        });
+        alert(data.message);
+        showWithdrawModal.value = false;
+        fetchProfile(); // update balance
+    } catch (e) {
+        const msg = e.response?.data?.error || 'Withdrawal Failed';
+        alert(msg);
+    } finally {
+        isWithdrawing.value = false;
+    }
+};
+
 onMounted(() => {
     fetchProfile();
     fetchTransactions();
+    fetchReferralStats();
     
     // Load Paystack script dynamically if not present
     if (!window.PaystackPop) {
@@ -187,11 +245,40 @@ const formattedExpiry = computed(() => {
           </div>
        </section>
 
-       <!-- Preferences -->
+       <!-- Bonus / Referrals -->
        <section class="settings-group">
-          <h3 class="group-title">Preferences</h3>
+          <h3 class="group-title">Referrals & Bonus</h3>
           
-          <div class="setting-item">
+          <div class="referral-card">
+              <div class="ref-header">
+                  <p class="ref-desc">Invite friends and earn <strong>5%</strong> of their subscription payments forever.</p>
+                  <button class="copy-btn" @click="copyReferralLink">
+                     <Copy :size="14" /> Copy Link
+                  </button>
+              </div>
+
+              <div class="ref-stats-grid">
+                  <div class="stat-box">
+                      <span class="stat-label">Referred</span>
+                      <span class="stat-val">{{ referralStats.referredCount }}</span>
+                  </div>
+                  <div class="stat-box">
+                      <span class="stat-label">Total Earned</span>
+                      <span class="stat-val">₦{{ referralStats.totalEarnings.toLocaleString() }}</span>
+                  </div>
+                  <div class="stat-box highlight">
+                      <span class="stat-label">Wallet Balance</span>
+                      <span class="stat-val">₦{{ parseFloat(user.balance).toLocaleString() }}</span>
+                  </div>
+              </div>
+
+              <button class="withdraw-btn" @click="openWithdrawModal">
+                  <Banknote :size="16" /> Request Withdrawal
+              </button>
+          </div>
+
+          <!-- Existing Settings -->
+          <div class="setting-item" style="margin-top: 1.5rem;">
              <div class="item-left">
                 <Building2 :size="20" class="item-icon green-text" />
                 <span class="item-label">Default Bookmaker</span>
@@ -225,7 +312,7 @@ const formattedExpiry = computed(() => {
           <div v-else class="history-list">
              <div v-for="item in transactions" :key="item.id" class="history-card">
                 <div class="h-header">
-                   <h4 class="h-title">{{ item.type === 'deposit' ? 'Deposit' : 'Subscription' }}</h4>
+                   <h4 class="h-title">{{ item.type ? item.type.charAt(0).toUpperCase() + item.type.slice(1) : 'Transaction' }}</h4>
                    <span class="status-badge" :style="{ backgroundColor: getStatusColor(item.status) + '20', color: getStatusColor(item.status) }">
                       {{ item.status }}
                    </span>
@@ -235,7 +322,7 @@ const formattedExpiry = computed(() => {
                 </div>
                 <div class="h-footer">
                    <span class="label">Amount:</span>
-                   <span class="odds-val">₦{{ item.amount }}</span>
+                   <span class="odds-val">₦{{ parseFloat(item.amount).toLocaleString() }}</span>
                 </div>
              </div>
           </div>
@@ -296,6 +383,39 @@ const formattedExpiry = computed(() => {
             
             <AppButton block variant="primary" @click="confirmAddFunds" :disabled="isAddingFunds">
                 {{ isAddingFunds ? 'Processing...' : 'Fund Wallet' }}
+            </AppButton>
+        </div>
+    </AppModal>
+
+    <!-- Withdraw Modal -->
+    <AppModal :isOpen="showWithdrawModal" title="Request Withdrawal" @close="showWithdrawModal = false">
+        <div class="fund-form">
+            <p style="font-size: 0.85rem; color: #a1a1aa; margin-bottom: 1rem;">
+                Withdrawals are processed manually. Funds will be sent to the account provided below.
+            </p>
+            
+            <div class="flex-col" style="gap: 0.5rem;">
+                <label>Amount (₦)</label>
+                <input type="number" v-model="withdrawForm.amount" class="fund-input" placeholder="Min 1000" />
+            </div>
+
+             <div class="flex-col" style="gap: 0.5rem;">
+                <label>Bank Name</label>
+                <input type="text" v-model="withdrawForm.bankName" class="fund-input" placeholder="e.g. GTBank" />
+            </div>
+
+             <div class="flex-col" style="gap: 0.5rem;">
+                <label>Account Number</label>
+                <input type="text" v-model="withdrawForm.accountNumber" class="fund-input" placeholder="0123456789" />
+            </div>
+
+             <div class="flex-col" style="gap: 0.5rem;">
+                <label>Account Name</label>
+                <input type="text" v-model="withdrawForm.accountName" class="fund-input" placeholder="John Doe" />
+            </div>
+            
+            <AppButton block variant="primary" @click="confirmWithdraw" :disabled="isWithdrawing" style="margin-top: 1rem;">
+                {{ isWithdrawing ? 'Processing...' : 'Submit Request' }}
             </AppButton>
         </div>
     </AppModal>
@@ -671,4 +791,87 @@ const formattedExpiry = computed(() => {
     border-radius: 999px;
     font-weight: 600;
 }
+
+
+/* Referral Card Styles */
+.referral-card {
+    background-color: #23232a;
+    border: 1px solid #3f3f46;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+.ref-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+.ref-desc {
+    font-size: 0.85rem;
+    color: #e4e4e7;
+    line-height: 1.4;
+    flex: 1;
+}
+.ref-desc strong { color: var(--color-primary); }
+.copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: #27272a;
+    border: 1px solid #3f3f46;
+    color: white;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.copy-btn:hover { background-color: #3f3f46; }
+
+.ref-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    background-color: #18181b;
+    padding: 1rem;
+    border-radius: 8px;
+}
+.stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.stat-label {
+    font-size: 0.7rem;
+    color: #a1a1aa;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+.stat-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+}
+.stat-box.highlight .stat-val { color: var(--color-primary); }
+
+.withdraw-btn {
+    width: 100%;
+    background-color: var(--color-primary);
+    color: black;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+.withdraw-btn:hover { opacity: 0.9; }
 </style>
