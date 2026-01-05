@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3009;
+const PORT = process.env.PORT || 3005;
 
 // ===================
 // SECURITY MIDDLEWARE
@@ -49,7 +49,7 @@ app.disable('x-powered-by');
 // CORS configuration - restrict to allowed origins
 const allowedOrigins = [
     'http://localhost:5173',  // Vite dev server
-    'http://localhost:3009',  // Express server
+    'http://localhost:3005',  // Express server
     'http://127.0.0.1:5173',
     process.env.FRONTEND_URL  // Production frontend URL
 ].filter(Boolean);

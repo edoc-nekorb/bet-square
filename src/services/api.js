@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3005/api'
 });
 
 // Request interceptor to add token
@@ -34,6 +34,7 @@ export const auth = {
     verifyOTP: (email, otp) => api.post('/auth/verify-otp', { email, otp }),
     resendOTP: (email) => api.post('/auth/resend-otp', { email }),
     me: () => api.get('/auth/me'),
+    changePassword: (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword }),
     getReferralStats: () => api.get('/auth/referral-stats'),
     logout: () => {
         localStorage.removeItem('token');

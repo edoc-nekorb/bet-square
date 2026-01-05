@@ -33,7 +33,7 @@ import { auth } from '@/services/api';
 
 const handleLogout = () => {
     auth.logout();
-    router.push('/login');
+    window.location.href = '/login';
 };
 
 const isActive = (item) => {
@@ -107,7 +107,7 @@ const closeSidebar = () => {
     <main class="main-content">
        <header class="top-bar">
           <h2 class="page-title">{{ route.meta.title || 'Dashboard' }}</h2>
-          <div class="admin-profile">
+          <div class="admin-profile" @click="router.push('/admin/profile')" style="cursor: pointer;">
              <div class="admin-info">
                 <span class="admin-name">Administrator</span>
                 <span class="admin-role">Super User</span>
@@ -126,7 +126,7 @@ const closeSidebar = () => {
 <style scoped>
 .admin-layout {
   display: flex;
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: #18181b;
   color: #e4e4e7;
 }
@@ -180,7 +180,7 @@ const closeSidebar = () => {
   flex-direction: column;
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100dvh;
   z-index: 50;
   transition: transform 0.3s ease;
 }

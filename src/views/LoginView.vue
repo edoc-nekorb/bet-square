@@ -174,7 +174,7 @@ const handleResendOTP = async () => {
 
 <style scoped>
 .auth-container {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   padding: 2rem 1.5rem;

@@ -275,4 +275,34 @@ router.get('/referral-stats', async (req, res) => {
     }
 });
 
+// CHANGE PASSWORD
+router.post('/change-password', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token' });
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { currentPassword, newPassword } = req.body;
+
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ error: 'New password must be at least 6 characters' });
+        }
+
+        const [users] = await db.execute('SELECT * FROM users WHERE id = ?', [decoded.id]);
+        if (users.length === 0) return res.status(404).json({ error: 'User not found' });
+        const user = users[0];
+
+        const valid = await bcrypt.compare(currentPassword, user.password);
+        if (!valid) return res.status(400).json({ error: 'Incorrect current password' });
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await db.execute('UPDATE users SET password = ? WHERE id = ?', [hashed, user.id]);
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (err) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
+});
+
 export default router;

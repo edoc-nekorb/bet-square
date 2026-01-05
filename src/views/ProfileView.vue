@@ -1,5 +1,5 @@
 <script setup>
-import { Bell, User, ChevronRight, LogOut, Link as LinkIcon, Building2, Palette, Clock, Trash2, Plus, ArrowLeft, ArrowRight, Copy, Banknote, Landmark } from 'lucide-vue-next';
+import { Bell, User, ChevronRight, LogOut, Link as LinkIcon, Building2, Palette, Clock, Trash2, Plus, ArrowLeft, ArrowRight, Copy, Banknote, Landmark, Lock } from 'lucide-vue-next';
 import BottomNav from '../components/BottomNav.vue';
 import AppButton from '../components/ui/AppButton.vue';
 import AppModal from '../components/ui/AppModal.vue';
@@ -23,6 +23,10 @@ const isWithdrawing = ref(false);
 const isAddingFunds = ref(false);
 const showFundModal = ref(false);
 const fundAmount = ref(5000); // Default amount
+
+const showPasswordModal = ref(false);
+const passwordForm = ref({ current: '', new: '', confirm: '' });
+const isChangingPassword = ref(false);
 
 const transactions = ref([]);
 const pagination = ref({ page: 1, totalPages: 1 });
@@ -111,7 +115,7 @@ const confirmAddFunds = async () => {
 
 const handleLogout = () => {
     auth.logout();
-    router.push('/');
+    window.location.href = '/';
 };
 
 const fetchReferralStats = async () => {
@@ -162,6 +166,33 @@ const confirmWithdraw = async () => {
         alert(msg);
     } finally {
         isWithdrawing.value = false;
+    }
+};
+
+const openPasswordModal = () => {
+    passwordForm.value = { current: '', new: '', confirm: '' };
+    showPasswordModal.value = true;
+};
+
+const handleChangePassword = async () => {
+    if (passwordForm.value.new !== passwordForm.value.confirm) {
+        alert("New passwords do not match");
+        return;
+    }
+    if (passwordForm.value.new.length < 6) {
+        alert("Password must be at least 6 characters");
+        return;
+    }
+    
+    isChangingPassword.value = true;
+    try {
+        const { data } = await auth.changePassword(passwordForm.value.current, passwordForm.value.new);
+        alert(data.message);
+        showPasswordModal.value = false;
+    } catch (e) {
+        alert(e.response?.data?.error || 'Failed to change password');
+    } finally {
+        isChangingPassword.value = false;
     }
 };
 
@@ -303,6 +334,20 @@ const formattedExpiry = computed(() => {
           </div>
        </section>
        
+       <!-- Security -->
+       <section class="settings-group">
+          <h3 class="group-title">Security</h3>
+          <div class="setting-item" @click="openPasswordModal">
+             <div class="item-left">
+                <Lock :size="20" class="item-icon green-text" />
+                <span class="item-label">Change Password</span>
+             </div>
+             <div class="item-right">
+                <ChevronRight :size="16" class="chevron" />
+             </div>
+          </div>
+       </section>
+       
        <!-- Transaction History -->
        <section class="settings-group">
           <h3 class="group-title">Transaction History</h3>
@@ -416,6 +461,30 @@ const formattedExpiry = computed(() => {
             
             <AppButton block variant="primary" @click="confirmWithdraw" :disabled="isWithdrawing" style="margin-top: 1rem;">
                 {{ isWithdrawing ? 'Processing...' : 'Submit Request' }}
+            </AppButton>
+        </div>
+    </AppModal>
+
+    <!-- Change Password Modal -->
+    <AppModal :isOpen="showPasswordModal" title="Change Password" @close="showPasswordModal = false">
+        <div class="fund-form">
+             <div class="flex-col" style="gap: 0.5rem;">
+                <label>Current Password</label>
+                <input type="password" v-model="passwordForm.current" class="fund-input" placeholder="Current Password" />
+            </div>
+
+             <div class="flex-col" style="gap: 0.5rem;">
+                <label>New Password</label>
+                <input type="password" v-model="passwordForm.new" class="fund-input" placeholder="New Password (min 6 chars)" />
+            </div>
+
+             <div class="flex-col" style="gap: 0.5rem;">
+                <label>Confirm Password</label>
+                <input type="password" v-model="passwordForm.confirm" class="fund-input" placeholder="Confirm New Password" />
+            </div>
+            
+            <AppButton block variant="primary" @click="handleChangePassword" :disabled="isChangingPassword" style="margin-top: 1rem;">
+                {{ isChangingPassword ? 'Updating...' : 'Update Password' }}
             </AppButton>
         </div>
     </AppModal>

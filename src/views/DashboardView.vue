@@ -18,7 +18,7 @@ const router = useRouter();
 
 const handleLogout = () => {
   auth.logout();
-  router.push('/login');
+  window.location.href = '/login';
 };
 
 const openNewsModal = (newsItem) => {
