@@ -4,6 +4,7 @@ import { useRouter, RouterLink } from 'vue-router';
 import AppButton from '../components/ui/AppButton.vue';
 import AppInput from '../components/ui/AppInput.vue';
 import { auth } from '../services/api';
+import { useAuth } from '../composables/useAuth';
 
 const router = useRouter();
 const email = ref('');
@@ -19,14 +20,14 @@ const isVerifying = ref(false);
 const isResending = ref(false);
 const pendingEmail = ref('');
 
+const { login } = useAuth();
+
 const handleLogin = async () => {
   isLoading.value = true;
   errorMsg.value = '';
   
   try {
-    const { data } = await auth.login(email.value, password.value);
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
+    await login(email.value, password.value);
     router.push('/dashboard');
   } catch (error) {
     const errData = error.response?.data;

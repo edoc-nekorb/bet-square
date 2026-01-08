@@ -51,6 +51,8 @@ const allowedOrigins = [
     'http://localhost:5173',  // Vite dev server
     'http://localhost:3005',  // Express server
     'http://127.0.0.1:5173',
+    'https://www.betsquare.ng',
+    'https://betsquare.ng',
     process.env.FRONTEND_URL  // Production frontend URL
 ].filter(Boolean);
 

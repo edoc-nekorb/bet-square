@@ -3,6 +3,7 @@ import db from '../db.js';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 dotenv.config();
 
 const router = express.Router();
@@ -73,7 +74,8 @@ router.post('/initialize', authenticateToken, async (req, res) => {
         const response = await axios.post('https://api.paystack.co/transaction/initialize', {
             email,
             amount: amount * 100, // Convert to kobo
-            callback_url: 'http://localhost:5173/payment/callback' // Frontend Callback Route
+
+            callback_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/callback` // Frontend Callback Route
         }, {
             headers: {
                 Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
@@ -324,6 +326,76 @@ router.post('/withdraw', authenticateToken, async (req, res) => {
         res.status(400).json({ error: err.message || 'Withdrawal failed' });
     } finally {
         connection.release();
+    }
+});
+
+// Paystack Webhook
+router.post('/webhook', async (req, res) => {
+    // Validate Signature
+    try {
+        const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY)
+            .update(JSON.stringify(req.body))
+            .digest('hex');
+
+        if (hash !== req.headers['x-paystack-signature']) {
+            return res.status(400).send('Invalid signature');
+        }
+    } catch (e) {
+        return res.status(400).send('Signature validation failed');
+    }
+
+    // Acknowledge receipt immediately (Paystack expects 200 fast)
+    res.sendStatus(200);
+
+    const event = req.body;
+
+    // Process "charge.success"
+    if (event.event === 'charge.success') {
+        const data = event.data;
+        const reference = data.reference;
+        const amount = data.amount / 100;
+        const email = data.customer.email;
+
+        try {
+            // Check if already processed
+            const [existing] = await db.execute('SELECT * FROM transactions WHERE reference = ?', [reference]);
+            if (existing.length > 0) return; // Already done
+
+            // Find User
+            const [users] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
+            if (users.length === 0) {
+                console.error('Webhook: User not found for email', email);
+                return;
+            }
+            const userId = users[0].id;
+
+            const connection = await db.getConnection();
+            await connection.beginTransaction();
+
+            try {
+                // Log transaction
+                await connection.execute(
+                    'INSERT INTO transactions (user_id, amount, reference, status, type) VALUES (?, ?, ?, ?, ?)',
+                    [userId, amount, reference, 'success', 'deposit']
+                );
+
+                // Update user balance
+                await connection.execute(
+                    'UPDATE users SET balance = balance + ? WHERE id = ?',
+                    [amount, userId]
+                );
+
+                await connection.commit();
+                console.log(`Webhook: Processed deposit ${reference}`);
+            } catch (err) {
+                await connection.rollback();
+                console.error('Webhook processing error:', err);
+            } finally {
+                connection.release();
+            }
+        } catch (dbErr) {
+            console.error('Webhook DB Error:', dbErr);
+        }
     }
 });
 

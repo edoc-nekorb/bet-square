@@ -3,6 +3,7 @@ import { Bell, Search, TrendingUp, Activity, Target, LogOut, User } from 'lucide
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth, content, betting, notifications } from '../services/api';
+import { useAuth } from '../composables/useAuth';
 import BottomNav from '../components/BottomNav.vue';
 import ActionCard from '../components/ActionCard.vue';
 import TicketRow from '../components/TicketRow.vue';
@@ -16,9 +17,10 @@ const showNewsModal = ref(false);
 const selectedNews = ref(null);
 const router = useRouter();
 
+const { user, logout } = useAuth();
+
 const handleLogout = () => {
-  auth.logout();
-  window.location.href = '/login';
+  logout();
 };
 
 const openNewsModal = (newsItem) => {
@@ -264,7 +266,7 @@ const filterByDate = () => {
     <header class="dashboard-header">
       <div class="header-top">
         <div class="avatar-container" @click="showUserMenu = !showUserMenu">
-           <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
+           <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.full_name || 'User'}`" alt="User" />
            
              <div v-if="showUserMenu" class="user-menu">
                <button @click.stop="router.push('/pricing')" class="menu-item text-gold">

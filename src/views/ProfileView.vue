@@ -5,10 +5,14 @@ import AppButton from '../components/ui/AppButton.vue';
 import AppModal from '../components/ui/AppModal.vue';
 import { ref, onMounted, computed } from 'vue';
 import { auth, payment } from '../services/api'; 
+import { useAuth } from '../composables/useAuth';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const user = ref({
+const { user: authUser, fetchUser, logout } = useAuth();
+
+// Use computed to provide default values if authUser is null (e.g. before load)
+const user = computed(() => authUser.value || {
     full_name: 'User',
     email: 'user@example.com',
     balance: '0.00',
@@ -32,12 +36,7 @@ const transactions = ref([]);
 const pagination = ref({ page: 1, totalPages: 1 });
 
 const fetchProfile = async () => {
-    try {
-        const { data } = await auth.me();
-        user.value = data;
-    } catch (e) {
-        console.error('Failed to load profile', e);
-    }
+    await fetchUser();
 };
 
 const fetchTransactions = async (page = 1) => {
@@ -114,8 +113,7 @@ const confirmAddFunds = async () => {
 };
 
 const handleLogout = () => {
-    auth.logout();
-    window.location.href = '/';
+    logout();
 };
 
 const fetchReferralStats = async () => {
