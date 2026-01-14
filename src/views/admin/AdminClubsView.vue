@@ -110,7 +110,7 @@ const handleConfirm = () => {
             <div class="form-grid">
                 <AppInput v-model="clubForm.name" label="Club Name" placeholder="e.g. Manchester City" id="club-name" />
                 <AppInput v-model="clubForm.short_name" label="Short Name / Initials" placeholder="e.g. MCI" id="club-short" />
-                <AppImageUpload v-model="clubForm.logo" label="Club Logo" />
+                <AppImageUpload v-model="clubForm.logo" label="Club Logo" :resize-width="56" :resize-height="56" />
             </div>
         </div>
 

@@ -1,10 +1,10 @@
+import './env.js'; // Ensure env vars are loaded first
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 
 // Security middleware
 import {
@@ -15,12 +15,11 @@ import {
     sanitizeInput
 } from './middleware/security.js';
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set('trust proxy', 1); // Enable proxy trust for rate limiter
 const PORT = process.env.PORT || 3005;
 
 // ===================
@@ -43,8 +42,13 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
+import compression from 'compression';
+
 // Hide X-Powered-By header
 app.disable('x-powered-by');
+
+// Enable GZIP compression
+app.use(compression());
 
 // CORS configuration - restrict to allowed origins
 const allowedOrigins = [
@@ -108,6 +112,7 @@ import paymentRoutes from './routes/payment.js';
 import adminRoutes from './routes/admin.js';
 import notificationRoutes from './routes/notifications.js';
 import subscriptionRoutes from './routes/subscriptions.js';
+import leagueRoutes from './routes/leagues.js';
 
 // Apply stricter rate limiting to auth routes
 app.use('/api/auth/login', authLimiter);
@@ -123,6 +128,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/push', subscriptionRoutes);
+app.use('/api/leagues', leagueRoutes);
 
 
 // Health Check

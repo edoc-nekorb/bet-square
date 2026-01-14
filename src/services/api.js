@@ -69,8 +69,9 @@ export const content = {
 
 
 export const upload = {
-    uploadImage: (formData) => api.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+    uploadImage: (formData, params = {}) => api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        params
     })
 };
 
@@ -93,6 +94,13 @@ export const betting = {
 };
 
 
+
+export const leagues = {
+    getAll: (search) => api.get('/leagues', { params: { search } }),
+    create: (data) => api.post('/leagues', data),
+    update: (id, data) => api.put(`/leagues/${id}`, data),
+    delete: (id) => api.delete(`/leagues/${id}`)
+};
 
 export const admin = {
     getStats: () => api.get('/admin/stats'),

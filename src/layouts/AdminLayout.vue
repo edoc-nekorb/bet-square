@@ -24,6 +24,7 @@ const navItems = [
   { name: 'Users', path: '/admin/users', icon: Users, exact: false },
   { name: 'Content', path: '/admin/content', icon: FileText, exact: false },
   { name: 'Clubs', path: '/admin/clubs', icon: Shield, exact: false },
+  { name: 'Leagues', path: '/admin/leagues', icon: Crown, exact: false },
   { name: 'Transactions / Withdrawals', path: '/admin/transactions', icon: CreditCard, exact: false },
   { name: 'Plans', path: '/admin/plans', icon: Crown, exact: false },
   { name: 'Notifications', path: '/admin/notifications', icon: Bell, exact: false },

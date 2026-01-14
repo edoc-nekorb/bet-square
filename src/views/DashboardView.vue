@@ -474,6 +474,12 @@ const filterByDate = () => {
             <div class="empty-subtitle" v-else>Check back later for new predictions</div>
          </div>
          <div v-else v-for="item in predictions" :key="item.id" class="prediction-card">
+            <!-- League Tab -->
+            <div class="league-tab" v-if="item.league_name">
+               <img v-if="item.league_logo" :src="item.league_logo" class="league-logo" />
+               <span class="league-name">{{ item.league_name }}</span>
+            </div>
+
             <!-- Match Header -->
             <div class="match-header">
                <div class="team-section">
@@ -954,8 +960,8 @@ const filterByDate = () => {
 }
 
 .team-logo-wrapper {
-  width: 32px;
-  height: 32px;
+   width: 60%;
+   height: 60%;
   border-radius: 6px;
   overflow: hidden;
   display: flex;
@@ -964,9 +970,10 @@ const filterByDate = () => {
 }
 
 .team-logo {
-  width: 32px;
-  height: 32px;
-  object-fit: cover;
+   width: 100%;
+   height: 100%;
+   object-fit: contain;
+   display: block;
 }
 
 .team-logo-placeholder {
@@ -1477,5 +1484,48 @@ const filterByDate = () => {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+/* League Tab Styles */
+.prediction-card {
+    position: relative;
+    padding-top: 2rem !important; /* Make sure there's space */
+}
+
+.league-tab {
+    position: absolute;
+    top: -16px; /* Floating above/on the border */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--color-card);
+    border: 1px solid #3f3f46;
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 10;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    min-width: 120px;
+    justify-content: center;
+}
+
+.league-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.league-name {
+    font-size: 0.70rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .prediction-card {
+      margin-top: 1rem; /* Extra spacing between cards */
+  }
 }
 </style>

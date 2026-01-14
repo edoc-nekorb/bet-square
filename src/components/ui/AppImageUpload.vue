@@ -16,6 +16,14 @@ const props = defineProps({
   bucket: {
     type: String,
     default: 'cms-images'
+  },
+  resizeWidth: {
+      type: Number,
+      default: null
+  },
+  resizeHeight: {
+      type: Number,
+      default: null
   }
 });
 
@@ -46,7 +54,10 @@ const handleFileChange = async (event) => {
         const formData = new FormData();
         formData.append('file', file);
 
-        const { data } = await upload.uploadImage(formData);
+        const { data } = await upload.uploadImage(formData, {
+            width: props.resizeWidth,
+            height: props.resizeHeight
+        });
         emit('update:modelValue', data.publicUrl);
     } catch (error) {
         console.error('Upload Error:', error);

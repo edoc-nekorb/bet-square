@@ -130,6 +130,12 @@ const router = createRouter({
                     meta: { title: 'Transactions' }
                 },
                 {
+                    path: 'leagues',
+                    name: 'admin-leagues',
+                    component: () => import('../views/admin/AdminLeaguesView.vue'),
+                    meta: { title: 'Leagues Management' }
+                },
+                {
                     path: 'plans',
                     name: 'admin-plans',
                     component: () => import('../views/admin/AdminPlansView.vue'),

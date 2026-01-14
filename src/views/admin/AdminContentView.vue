@@ -6,7 +6,7 @@ import AppInput from '../../components/ui/AppInput.vue';
 import AppImageUpload from '../../components/ui/AppImageUpload.vue';
 import AppConfirmModal from '../../components/ui/AppConfirmModal.vue';
 import AppAutocomplete from '../../components/ui/AppAutocomplete.vue';
-import { content, clubs } from '../../services/api';
+import { content, clubs, leagues } from '../../services/api';
 
 const activeTab = ref('News'); // News, Predictions, Insights
 const isEditing = ref(false);
@@ -22,12 +22,14 @@ const newsItems = ref([]);
 const predictions = ref([]);
 const insights = ref([]);
 const clubsList = ref([]);
+const leaguesList = ref([]);
 
 // Form Data
 const newsForm = ref({ title: '', source: '', status: 'Draft', image: '', body: '' });
 const predForm = ref({ 
     home_club_id: null, 
     away_club_id: null, 
+    league_id: null,
     outcome: '', 
     odds: '', 
     confidence: 'Medium', 
@@ -65,9 +67,19 @@ const fetchClubs = async (search = '') => {
     }
 };
 
+const fetchLeagues = async (search = '') => {
+    try {
+        const { data } = await leagues.getAll(search);
+        if (data) leaguesList.value = data;
+    } catch (e) {
+        console.error("Leagues fetch error", e);
+    }
+};
+
 onMounted(() => {
     fetchData();
     fetchClubs();
+    fetchLeagues();
 });
 
 const resetForms = () => {
@@ -75,6 +87,7 @@ const resetForms = () => {
     predForm.value = { 
         home_club_id: null, 
         away_club_id: null, 
+        league_id: null,
         outcome: '', 
         odds: '', 
         confidence: 'Medium', 
@@ -212,6 +225,18 @@ const handleConfirm = () => {
                         valueKey="id"
                         imageKey="logo"
                         @search="fetchClubs"
+                    />
+                </div>
+                 <div class="row-1" style="margin-bottom: 1rem;">
+                    <AppAutocomplete 
+                        v-model="predForm.league_id" 
+                        :items="leaguesList"
+                        label="League / Tournament"
+                        placeholder="Search league..."
+                        displayKey="name"
+                        valueKey="id"
+                        imageKey="logo"
+                        @search="fetchLeagues"
                     />
                 </div>
                 <div class="row-2">

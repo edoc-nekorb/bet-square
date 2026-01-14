@@ -296,7 +296,7 @@ const formattedExpiry = computed(() => {
                       <span class="stat-val">₦{{ referralStats.totalEarnings.toLocaleString() }}</span>
                   </div>
                   <div class="stat-box highlight">
-                      <span class="stat-label">Wallet Balance</span>
+                      <span class="stat-label"> Balance</span>
                       <span class="stat-val">₦{{ parseFloat(user.balance).toLocaleString() }}</span>
                   </div>
               </div>

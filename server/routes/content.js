@@ -55,10 +55,12 @@ router.get('/predictions', optionalAuth, async (req, res) => {
             SELECT 
                 p.*,
                 hc.name as home_club_name, hc.short_name as home_club_short, hc.logo as home_club_logo,
-                ac.name as away_club_name, ac.short_name as away_club_short, ac.logo as away_club_logo
+                ac.name as away_club_name, ac.short_name as away_club_short, ac.logo as away_club_logo,
+                l.name as league_name, l.logo as league_logo
             FROM predictions p
             LEFT JOIN clubs hc ON p.home_club_id = hc.id
             LEFT JOIN clubs ac ON p.away_club_id = ac.id
+            LEFT JOIN leagues l ON p.league_id = l.id
         `;
 
         let params = [];
@@ -111,11 +113,11 @@ router.get('/predictions', optionalAuth, async (req, res) => {
 });
 
 router.post('/predictions', async (req, res) => {
-    const { home_club_id, away_club_id, outcome, odds, confidence, status, match_date, match_time, result_status } = req.body;
+    const { home_club_id, away_club_id, outcome, odds, confidence, status, match_date, match_time, result_status, league_id } = req.body;
     try {
         await db.execute(
-            'INSERT INTO predictions (home_club_id, away_club_id, match_name, outcome, odds, confidence, status, match_date, match_time, result_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [home_club_id, away_club_id, `${home_club_id} vs ${away_club_id}`, outcome, odds, confidence, status, match_date, match_time || '00:00:00', result_status || 'pending']
+            'INSERT INTO predictions (home_club_id, away_club_id, match_name, outcome, odds, confidence, status, match_date, match_time, result_status, league_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [home_club_id, away_club_id, `${home_club_id} vs ${away_club_id}`, outcome, odds, confidence, status, match_date, match_time || '00:00:00', result_status || 'pending', league_id]
         );
 
         // Notify premium users about new prediction
@@ -135,11 +137,11 @@ router.post('/predictions', async (req, res) => {
 });
 
 router.put('/predictions/:id', async (req, res) => {
-    const { home_club_id, away_club_id, outcome, odds, confidence, status, match_date, match_time, result_status } = req.body;
+    const { home_club_id, away_club_id, outcome, odds, confidence, status, match_date, match_time, result_status, league_id } = req.body;
     try {
         await db.execute(
-            'UPDATE predictions SET home_club_id=?, away_club_id=?, match_name=?, outcome=?, odds=?, confidence=?, status=?, match_date=?, match_time=?, result_status=? WHERE id=?',
-            [home_club_id, away_club_id, `${home_club_id} vs ${away_club_id}`, outcome, odds, confidence, status, match_date, match_time, result_status, req.params.id]
+            'UPDATE predictions SET home_club_id=?, away_club_id=?, match_name=?, outcome=?, odds=?, confidence=?, status=?, match_date=?, match_time=?, result_status=?, league_id=? WHERE id=?',
+            [home_club_id, away_club_id, `${home_club_id} vs ${away_club_id}`, outcome, odds, confidence, status, match_date, match_time, result_status, league_id, req.params.id]
         );
 
         // Notify premium users about prediction result update

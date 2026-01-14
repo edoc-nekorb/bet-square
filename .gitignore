@@ -34,3 +34,11 @@ coverage
 
 # Vitest
 __screenshots__/
+
+# Uploads
+uploads/
+
+# Environment
+.env
+.env.local
+.env.*.local

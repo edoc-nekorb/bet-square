@@ -28,14 +28,46 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post('/', upload.single('file'), (req, res) => {
+import sharp from 'sharp';
+
+router.post('/', upload.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
-    // Return full URL assuming server runs on localhost:3000
-    // In production, use env var for domain
-    const url = `http://localhost:3000/uploads/${req.file.filename}`;
-    res.json({ publicUrl: url });
+
+    try {
+        // Resize if width/height provided
+        if (req.query.width || req.query.height) {
+            const width = req.query.width ? parseInt(req.query.width) : null;
+            const height = req.query.height ? parseInt(req.query.height) : null;
+            const originalPath = req.file.path;
+            const tempPath = `${originalPath}.tmp`;
+
+            await sharp(originalPath)
+                .resize({
+                    width: width,
+                    height: height,
+                    fit: 'contain',
+                    background: { r: 0, g: 0, b: 0, alpha: 0 }
+                })
+                .toFile(tempPath);
+
+            fs.unlinkSync(originalPath);
+            fs.renameSync(tempPath, originalPath);
+        }
+
+        // Construct URL dynamically based on request host
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const url = `${protocol}://${host}/uploads/${req.file.filename}`;
+        res.json({ publicUrl: url });
+
+    } catch (error) {
+        console.error('Resize error:', error);
+        // Even if resize fails, we might want to return the original or error out. 
+        // Let's return error but keep file for now? No, better error out.
+        return res.status(500).json({ error: 'Image processing failed' });
+    }
 });
 
 export default router;

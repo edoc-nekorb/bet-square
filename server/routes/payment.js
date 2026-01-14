@@ -253,13 +253,14 @@ router.get('/history', authenticateToken, async (req, res) => {
     const offset = (page - 1) * limit;
 
     try {
-        const [rows] = await db.execute(
+        // Use db.query instead of db.execute for LIMIT/OFFSET compatibility
+        const [rows] = await db.query(
             'SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
             [userId, parseInt(limit), parseInt(offset)]
         );
 
         // Get total count for pagination
-        const [countResult] = await db.execute(
+        const [countResult] = await db.query(
             'SELECT COUNT(*) as total FROM transactions WHERE user_id = ?',
             [userId]
         );
