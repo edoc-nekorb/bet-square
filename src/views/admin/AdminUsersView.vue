@@ -85,7 +85,7 @@ const confirmDelete = async (user) => {
         success('User deleted successfully');
         await fetchUsers();
     } catch (err) {
-        error('Failed to delete user');
+        error(err.response?.data?.error || 'Failed to delete user');
     }
 };
 

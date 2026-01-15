@@ -38,6 +38,8 @@ export const auth = {
     changePassword: (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword }),
     forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
     resetPassword: (token, newPassword) => api.post('/auth/reset-password', { token, newPassword }),
+    requestDeletion: () => api.post('/auth/request-deletion'),
+    cancelDeletion: () => api.post('/auth/cancel-deletion'),
     getReferralStats: () => api.get('/auth/referral-stats'),
     logout: () => {
         localStorage.removeItem('token');

@@ -96,11 +96,48 @@ const closeSidebar = () => {
   <div class="admin-layout">
     <!-- Mobile Header -->
     <header class="mobile-header">
-       <button @click="toggleSidebar" class="menu-btn">
-          <Menu :size="24" color="white" />
-       </button>
-       <span class="mobile-title">Admin Panel</span>
-       <div class="avatar-sm">AD</div>
+       <div class="mobile-left">
+           <button @click="toggleSidebar" class="menu-btn">
+              <Menu :size="24" color="white" />
+           </button>
+           <span class="mobile-title">Admin Panel</span>
+       </div>
+       
+       <div class="mobile-right">
+           <!-- Notification Bell (Mobile) -->
+           <div class="notif-wrap" @click="showNotifications = !showNotifications">
+               <Bell :size="20" />
+               <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+               
+               <!-- Dropdown (Mobile position adjusted via CSS) -->
+               <div v-if="showNotifications" class="notif-dropdown" @click.stop>
+                   <div class="dropdown-header">
+                       <h3>Notifications</h3>
+                       <button @click="showNotifications = false"><X :size="16"/></button>
+                   </div>
+                   <div class="notif-list">
+                       <div v-if="notifications.length === 0" class="p-4 text-center text-sm text-gray-500">
+                           No notifications
+                       </div>
+                       <div 
+                           v-for="notif in notifications" 
+                           :key="notif.id" 
+                           class="notif-item"
+                           :class="{ unread: !notif.is_read }"
+                           @click="markAsRead(notif.id)"
+                       >
+                           <p class="notif-msg">{{ notif.message }}</p>
+                           <span class="notif-time">{{ new Date(notif.created_at).toLocaleString() }}</span>
+                       </div>
+                   </div>
+                   <RouterLink to="/admin/notifications" class="view-all" @click="showNotifications = false">
+                       View All
+                   </RouterLink>
+               </div>
+           </div>
+           
+           <div class="avatar-sm">AD</div>
+       </div>
     </header>
 
     <!-- Sidebar Overlay -->
@@ -209,7 +246,7 @@ const closeSidebar = () => {
     display: none;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     background-color: var(--color-background);
     border-bottom: 1px solid #27272a;
     position: fixed;
@@ -217,6 +254,11 @@ const closeSidebar = () => {
     left: 0;
     right: 0;
     z-index: 40;
+}
+.mobile-left, .mobile-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 .mobile-title {
     font-weight: 700;
@@ -229,6 +271,7 @@ const closeSidebar = () => {
     padding: 0;
     cursor: pointer;
     color: white;
+    display: flex;
 }
 .avatar-sm {
     width: 32px;
@@ -435,6 +478,17 @@ const closeSidebar = () => {
 .notif-list {
     max-height: 300px;
     overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+    .notif-dropdown {
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: none;
+    }
 }
 
 .notif-item {
