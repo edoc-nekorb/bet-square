@@ -13,7 +13,7 @@ export const authenticateToken = (req, res, next) => {
         if (err) return res.sendStatus(403);
 
         try {
-            const [users] = await db.execute('SELECT id, role, plan, plan_expires_at, email, full_name, balance FROM users WHERE id = ?', [decoded.id]);
+            const [users] = await db.execute('SELECT id, role, plan, plan_expires_at, email, full_name, balance, deletion_requested_at FROM users WHERE id = ?', [decoded.id]);
             if (users.length === 0) return res.sendStatus(403);
 
             req.user = users[0];

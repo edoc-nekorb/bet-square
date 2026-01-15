@@ -192,16 +192,29 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
-// DELETE /api/admin/users/:id (Delete User)
+// DELETE /api/admin/users/:id (Soft Delete)
 router.delete('/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        await db.execute('DELETE FROM users WHERE id = ?', [id]);
-        res.json({ message: 'User deleted successfully' });
+        // Soft Delete: Anonymize and mark status
+        const timestamp = Date.now();
+
+        await db.execute(`
+            UPDATE users 
+            SET 
+                status = 'deleted', 
+                email = CONCAT('deleted_', ?, '_', email),
+                username = CONCAT('deleted_', ?, '_', username),
+                password = 'DELETED_ACCOUNT',
+                referral_code = NULL,
+                deletion_requested_at = NULL
+            WHERE id = ?
+        `, [timestamp, timestamp, id]);
+
+        res.json({ message: 'User soft-deleted successfully' });
     } catch (err) {
-        // Handle foreign key constraints (e.g. transactions, tickets)
-        // For now, simple delete. In prod, maybe soft delete or cascade.
-        res.status(500).json({ error: 'Failed to delete user. Check dependencies.' });
+        console.error('Delete user error:', err);
+        res.status(500).json({ error: 'Failed to delete user.' });
     }
 });
 

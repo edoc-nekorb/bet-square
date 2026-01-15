@@ -30,7 +30,46 @@ const navItems = [
   { name: 'Notifications', path: '/admin/notifications', icon: Bell, exact: false },
 ];
 
-import { auth } from '@/services/api';
+import api, { auth } from '@/services/api';
+
+const notifications = ref([]);
+const unreadCount = ref(0);
+const showNotifications = ref(false);
+
+const fetchNotifications = async () => {
+    try {
+        const { data } = await api.get('/notifications/admin');
+        notifications.value = data;
+        unreadCount.value = data.filter(n => !n.is_read).length;
+    } catch (e) {
+        console.error('Failed to load notifications', e);
+    }
+};
+
+const markAsRead = async (id) => {
+    try {
+        // Optimistic update
+        const notif = notifications.value.find(n => n.id === id);
+        if (notif && !notif.is_read) {
+            notif.is_read = true;
+            unreadCount.value--;
+            await api.put(`/notifications/${id}/read`);
+        }
+    } catch(e) {}
+};
+
+// Poll for notifications every 30s
+let pollInterval;
+import { onMounted, onUnmounted } from 'vue';
+
+onMounted(() => {
+    fetchNotifications();
+    pollInterval = setInterval(fetchNotifications, 30000);
+});
+
+onUnmounted(() => {
+    if (pollInterval) clearInterval(pollInterval);
+});
 
 const handleLogout = () => {
     auth.logout();
@@ -114,7 +153,40 @@ const closeSidebar = () => {
                 <span class="admin-role">Super User</span>
              </div>
              <div class="avatar">AD</div>
+             <div class="avatar">AD</div>
           </div>
+          
+           <!-- Notification Bell -->
+           <div class="notif-wrap" @click="showNotifications = !showNotifications">
+               <Bell :size="20" />
+               <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
+               
+               <!-- Dropdown -->
+               <div v-if="showNotifications" class="notif-dropdown" @click.stop>
+                   <div class="dropdown-header">
+                       <h3>Notifications</h3>
+                       <button @click="showNotifications = false"><X :size="16"/></button>
+                   </div>
+                   <div class="notif-list">
+                       <div v-if="notifications.length === 0" class="p-4 text-center text-sm text-gray-500">
+                           No notifications
+                       </div>
+                       <div 
+                           v-for="notif in notifications" 
+                           :key="notif.id" 
+                           class="notif-item"
+                           :class="{ unread: !notif.is_read }"
+                           @click="markAsRead(notif.id)"
+                       >
+                           <p class="notif-msg">{{ notif.message }}</p>
+                           <span class="notif-time">{{ new Date(notif.created_at).toLocaleString() }}</span>
+                       </div>
+                   </div>
+                   <RouterLink to="/admin/notifications" class="view-all" @click="showNotifications = false">
+                       View All
+                   </RouterLink>
+               </div>
+           </div>
        </header>
        
        <div class="page-body">
@@ -302,7 +374,100 @@ const closeSidebar = () => {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: auto; /* Push to right */
 }
+
+.notif-wrap {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #27272a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 1rem;
+    border: 1px solid #3f3f46;
+}
+
+.notif-wrap:hover {
+    background: #3f3f46;
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 2px solid #18181b;
+}
+
+.notif-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 320px;
+    background: #18181b;
+    border: 1px solid #3f3f46;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    overflow: hidden;
+    cursor: default;
+}
+
+.dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #27272a;
+    background: #27272a;
+}
+.dropdown-header h3 { font-size: 0.875rem; font-weight: 600; color: white; margin: 0; }
+
+.notif-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    padding: 1rem;
+    border-bottom: 1px solid #27272a;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.notif-item:hover { background: #27272a; }
+.notif-item.unread { background: rgba(34, 197, 94, 0.05); border-left: 2px solid #22c55e; }
+
+.notif-msg {
+    font-size: 0.875rem;
+    color: #e4e4e7;
+    margin-bottom: 0.25rem;
+    line-height: 1.4;
+}
+.notif-time {
+    font-size: 0.75rem;
+    color: #a1a1aa;
+}
+
+.view-all {
+    display: block;
+    text-align: center;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: #22c55e;
+    font-weight: 500;
+    background: #1f2937;
+    text-decoration: none;
+}
+.view-all:hover { background: #374151; }
 
 .admin-info {
   text-align: right;

@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../db.js';
-import { isAllowedEmailDomain, generateOTP, sendVerificationEmail } from '../services/email.js';
+import { isAllowedEmailDomain, generateOTP, sendVerificationEmail, sendDeletionRequestEmail } from '../services/email.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -239,7 +239,7 @@ router.get('/me', async (req, res) => {
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         const [users] = await db.execute(
-            'SELECT id, email, role, full_name, username, balance, plan, plan_expires_at, email_verified, referral_code FROM users WHERE id = ?',
+            'SELECT id, email, role, full_name, username, balance, plan, plan_expires_at, email_verified, referral_code, deletion_requested_at FROM users WHERE id = ?',
             [decoded.id]
         );
         if (users.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -302,6 +302,57 @@ router.post('/change-password', async (req, res) => {
         res.json({ message: 'Password updated successfully' });
     } catch (err) {
         res.status(401).json({ error: 'Invalid token' });
+    }
+});
+
+// REQUEST DELETION
+router.post('/request-deletion', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token' });
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const [users] = await db.execute('SELECT * FROM users WHERE id = ?', [decoded.id]);
+        if (users.length === 0) return res.status(404).json({ error: 'User not found' });
+        const user = users[0];
+
+        // 1. Mark as requested
+        await db.execute('UPDATE users SET deletion_requested_at = NOW() WHERE id = ?', [user.id]);
+
+        // 2. Notify Admin (DB Notification)
+        await db.execute(
+            'INSERT INTO admin_notifications (type, user_id, message) VALUES (?, ?, ?)',
+            ['deletion_request', user.id, `User ${user.full_name} (${user.email}) has requested account deletion.`]
+        );
+
+        // 3. Email User
+        sendDeletionRequestEmail(user.email, user.username || user.full_name);
+
+        res.json({ message: 'Deletion requested successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// CANCEL DELETION
+router.post('/cancel-deletion', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token' });
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        // 1. Clear request
+        await db.execute('UPDATE users SET deletion_requested_at = NULL WHERE id = ?', [decoded.id]);
+
+        // 2. Remove notification (Optional cleanup)
+        await db.execute("DELETE FROM admin_notifications WHERE user_id = ? AND type = 'deletion_request'", [decoded.id]);
+
+        res.json({ message: 'Deletion request cancelled' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 

@@ -80,8 +80,52 @@ export const sendVerificationEmail = async (email, otp, username) => {
     }
 };
 
+/**
+ * Send deletion request confirmation email
+ */
+export const sendDeletionRequestEmail = async (email, username) => {
+    const mailOptions = {
+        from: `"Bet Square" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Account Deletion Requested',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #dc2626; margin: 0;">Deletion Requested</h1>
+                </div>
+                
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; text-align: center;">
+                    <h2 style="color: #333; margin-bottom: 10px;">Hello ${username},</h2>
+                    <p style="color: #666; margin-bottom: 25px;">
+                        We received a request to permanently delete your Bet Square account.
+                    </p>
+                    <p style="color: #666;">
+                        Your account is now pending deletion. An admin will review this request shortly.
+                        If you changed your mind, you can cancel this request from your profile settings.
+                    </p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px; color: #999; font-size: 12px;">
+                    <p>© ${new Date().getFullYear()} Bet Square.</p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`[EMAIL] Deletion email sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error('[EMAIL] Failed to send deletion email:', error.message);
+        // Don't throw, just log.
+        return false;
+    }
+};
+
 export default {
     isAllowedEmailDomain,
     generateOTP,
-    sendVerificationEmail
+    sendVerificationEmail,
+    sendDeletionRequestEmail
 };

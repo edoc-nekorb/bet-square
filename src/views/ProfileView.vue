@@ -4,7 +4,7 @@ import BottomNav from '../components/BottomNav.vue';
 import AppButton from '../components/ui/AppButton.vue';
 import AppModal from '../components/ui/AppModal.vue';
 import { ref, onMounted, computed } from 'vue';
-import { auth, payment } from '../services/api'; 
+import api, { auth, payment } from '../services/api'; 
 import { useAuth } from '../composables/useAuth';
 import { useRouter } from 'vue-router';
 
@@ -191,6 +191,36 @@ const handleChangePassword = async () => {
         alert(e.response?.data?.error || 'Failed to change password');
     } finally {
         isChangingPassword.value = false;
+    }
+};
+
+const handleRequestDeletion = async () => {
+    if (!confirm('Are you sure you want to request account deletion? Note: This action is permanent (but can be cancelled before admin approval).')) return;
+    
+    try {
+        isLoading.value = true;
+        await api.post('/auth/request-deletion');
+        alert('Deletion request sent. Admin will review shortly.');
+        // Refresh user data
+        await fetchProfile();
+    } catch (err) {
+        alert(err.response?.data?.error || 'Failed to request deletion');
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+const handleCancelDeletion = async () => {
+    try {
+        isLoading.value = true;
+        await api.post('/auth/cancel-deletion');
+        alert('Deletion request cancelled');
+         // Refresh user data
+        await fetchProfile();
+    } catch (err) {
+         alert('Failed to cancel deletion');
+    } finally {
+        isLoading.value = false;
     }
 };
 
@@ -397,12 +427,26 @@ const formattedExpiry = computed(() => {
        </section>
 
         <!-- Danger Zone -->
+        <!-- Danger Zone -->
        <section class="danger-zone">
           <h3 class="danger-title">Danger Zone</h3>
-          <p class="danger-desc">Deleting your account is a permanent action and cannot be undone.</p>
-          <button class="delete-btn">
-             <Trash2 :size="16" /> Delete account
-          </button>
+          
+          <div v-if="user.deletion_requested_at" class="deletion-pending">
+              <div class="pending-msg">
+                  <strong>Deletion Pending</strong>
+                  <p>You requested checking account deletion on {{ new Date(user.deletion_requested_at).toLocaleDateString() }}.</p>
+              </div>
+              <button class="cancel-btn" @click="handleCancelDeletion" :disabled="isLoading">
+                 Cancel Request
+              </button>
+          </div>
+
+          <div v-else>
+               <p class="danger-desc">Deleting your account is a permanent action and cannot be undone.</p>
+               <button class="delete-btn" @click="handleRequestDeletion" :disabled="isLoading">
+                    <Trash2 :size="16" /> Delete account
+               </button>
+          </div>
        </section>
 
     </div>
