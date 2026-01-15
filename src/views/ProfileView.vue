@@ -23,6 +23,7 @@ const referralStats = ref({ referredCount: 0, totalEarnings: 0 });
 const showWithdrawModal = ref(false);
 const withdrawForm = ref({ amount: '', bankName: '', accountNumber: '', accountName: '' });
 const isWithdrawing = ref(false);
+const isLoading = ref(false);
 
 const isAddingFunds = ref(false);
 const showFundModal = ref(false);
