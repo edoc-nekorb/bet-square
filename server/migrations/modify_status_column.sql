@@ -1,0 +1,1 @@
+ALTER TABLE users MODIFY COLUMN status VARCHAR(20) DEFAULT 'active';

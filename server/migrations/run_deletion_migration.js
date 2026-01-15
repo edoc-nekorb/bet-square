@@ -9,6 +9,17 @@ const __dirname = path.dirname(__filename);
 
 const runMigration = async () => {
     try {
+        // 1. Modify Status Column (Fix for truncation error)
+        const statusSqlPath = path.join(__dirname, 'modify_status_column.sql');
+        const statusSql = fs.readFileSync(statusSqlPath, 'utf8');
+        try {
+            await db.query(statusSql);
+            console.log('Modified status column successfully');
+        } catch (e) {
+            console.log('Status column modification skipped or failed:', e.message);
+        }
+
+        // 2. Run Deletion Flow Migration
         const sqlPath = path.join(__dirname, 'create_deletion_flow.sql');
         const sql = fs.readFileSync(sqlPath, 'utf8');
 
