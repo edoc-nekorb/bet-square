@@ -123,9 +123,61 @@ export const sendDeletionRequestEmail = async (email, username) => {
     }
 };
 
+
+/**
+ * Send password reset email
+ */
+export const sendPasswordResetEmail = async (email, resetToken, username) => {
+    // In production, this link should point to your frontend URL
+    const resetLink = `https://www.betsquare.ng/reset-password?token=${resetToken}`;
+
+    const mailOptions = {
+        from: `"Bet Square" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Reset Your Password',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #22c55e; margin: 0;">Password Reset</h1>
+                </div>
+                
+                <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; text-align: center;">
+                    <h2 style="color: #333; margin-bottom: 10px;">Hello ${username},</h2>
+                    <p style="color: #666; margin-bottom: 25px;">
+                        We received a request to reset your password. Click the button below to proceed:
+                    </p>
+                    
+                    <a href="${resetLink}" style="background-color: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin: 20px 0;">
+                        Reset Password
+                    </a>
+                    
+                    <p style="color: #999; font-size: 14px; margin-top: 25px;">
+                        This link expires in 1 hour.<br>
+                        If you didn't request this, purely ignore this email.
+                    </p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px; color: #999; font-size: 12px;">
+                    <p>© ${new Date().getFullYear()} Bet Square.</p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`[EMAIL] Reset password email sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error('[EMAIL] Failed to send reset email:', error.message);
+        throw new Error('Failed to send reset email');
+    }
+};
+
 export default {
     isAllowedEmailDomain,
     generateOTP,
     sendVerificationEmail,
-    sendDeletionRequestEmail
+    sendDeletionRequestEmail,
+    sendPasswordResetEmail
 };

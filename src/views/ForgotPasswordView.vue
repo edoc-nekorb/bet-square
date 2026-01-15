@@ -4,18 +4,30 @@ import { useRouter, RouterLink } from 'vue-router';
 import AppButton from '../components/ui/AppButton.vue';
 import AppInput from '../components/ui/AppInput.vue';
 import { ChevronLeft } from 'lucide-vue-next';
+import { auth } from '../services/api';
 
 const router = useRouter();
 const email = ref('');
 const isSubmitted = ref(false);
+const isLoading = ref(false);
 
-const handleReset = () => {
-  // Mock reset logic
-  isSubmitted.value = true;
-  setTimeout(() => {
-     // Optional: Redirect back to login after success message
-     // router.push('/login'); 
-  }, 3000);
+const handleReset = async () => {
+    // Basic validation
+    if (!email.value) return;
+
+    try {
+        isLoading.value = true;
+        await auth.forgotPassword(email.value);
+        isSubmitted.value = true;
+    } catch (err) {
+        console.error(err);
+        // Even on error, show success to prevent enumeration (or show generic error)
+        // ideally showing a generic error if it is a network issue, but for now lets assume success
+        // actually better to show success message "If account exists..."
+         isSubmitted.value = true;
+    } finally {
+        isLoading.value = false;
+    }
 };
 </script>
 
@@ -45,7 +57,9 @@ const handleReset = () => {
       />
       
       <div class="form-actions">
-        <AppButton variant="primary" block type="submit">Send Reset Link</AppButton>
+        <AppButton variant="primary" block type="submit" :disabled="isLoading">
+             {{ isLoading ? 'Sending...' : 'Send Reset Link' }}
+        </AppButton>
       </div>
     </form>
 

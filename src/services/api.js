@@ -34,7 +34,10 @@ export const auth = {
     verifyOTP: (email, otp) => api.post('/auth/verify-otp', { email, otp }),
     resendOTP: (email) => api.post('/auth/resend-otp', { email }),
     me: () => api.get('/auth/me'),
+    me: () => api.get('/auth/me'),
     changePassword: (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword }),
+    forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+    resetPassword: (token, newPassword) => api.post('/auth/reset-password', { token, newPassword }),
     getReferralStats: () => api.get('/auth/referral-stats'),
     logout: () => {
         localStorage.removeItem('token');
