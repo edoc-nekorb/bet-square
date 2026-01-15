@@ -8,7 +8,11 @@ import path from 'path';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
-const LOG_FILE = '/Users/billz/Desktop/BigtreeAi/bet-square-ui/server_debug.log';
+const LOG_DIR = path.join(process.cwd(), 'logs');
+if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+}
+const LOG_FILE = path.join(LOG_DIR, 'admin_debug.log');
 
 function log(msg) {
     const time = new Date().toISOString();
