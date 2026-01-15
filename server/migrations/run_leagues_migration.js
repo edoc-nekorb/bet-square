@@ -1,7 +1,7 @@
+import '../env.js';
 import db from '../db.js';
 import fs from 'fs';
 import path from 'path';
-import 'dotenv/config';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
