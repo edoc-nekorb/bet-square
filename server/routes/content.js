@@ -74,7 +74,7 @@ router.get('/predictions', optionalAuth, async (req, res) => {
         query += ' ORDER BY p.match_date DESC, p.created_at DESC LIMIT ? OFFSET ?';
         params.push(parseInt(limit), parseInt(offset));
 
-        const [rows] = await db.execute(query, params);
+        const [rows] = await db.query(query, params);
 
         // Access Control Logic
         const isAdmin = req.user?.role === 'admin';
