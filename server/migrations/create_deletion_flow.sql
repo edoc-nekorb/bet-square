@@ -1,4 +1,4 @@
-ALTER TABLE users ADD COLUMN IF NOT EXISTS deletion_requested_at DATETIME NULL;
+ALTER TABLE users ADD COLUMN deletion_requested_at DATETIME NULL;
 
 CREATE TABLE IF NOT EXISTS admin_notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
