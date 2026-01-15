@@ -138,14 +138,15 @@ app.get('/', (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error('[ERROR]', err.message);
+    console.error('[CRITICAL] Global Error Handler:', err);
+    console.error('[CRITICAL] Stack:', err.stack);
 
     // Don't leak error details in production
-    if (process.env.NODE_ENV === 'production') {
-        res.status(500).json({ error: 'Internal server error' });
-    } else {
-        res.status(500).json({ error: err.message });
-    }
+    // TEMPORARY: Return error details to client for debugging
+    res.status(500).json({
+        error: 'Internal server error',
+        debug: err.message
+    });
 });
 
 // Start Server
