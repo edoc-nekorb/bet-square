@@ -9,6 +9,7 @@ router.get('/news', async (req, res) => {
         const [rows] = await db.execute('SELECT * FROM news ORDER BY created_at DESC');
         res.json(rows);
     } catch (err) {
+        console.error('[API] Validation/News Error:', err);
         res.status(500).json({ error: err.message });
     }
 });
